@@ -62,7 +62,9 @@ public class LoginController {
             new AdminDashboardController(gestionUtilisateur, gestionBatiment, gestionChambre, gestionEtudiant,
                     primaryStage).show();
         } else if (user.getRole() == UserRole.CHEF_BATIMENT) {
-            if (user.getBatimentId() == null || gestionBatiment.getBatiment(user.getBatimentId()) == null) {
+            if (!(user instanceof ChefBatiment chefBatiment)
+                    || chefBatiment.getBatimentId() == null
+                    || gestionBatiment.getBatiment(chefBatiment.getBatimentId()) == null) {
                 showErrorAlert("Compte incomplet",
                         "Ce chef de bâtiment n'est associé à aucun bâtiment. Veuillez contacter l'administrateur.");
                 return;
