@@ -1,0 +1,9 @@
+{
+    "java.home": null,
+    "java.semanticHighlight.enabled": true,
+    "java.saveActionOrganizeImports": true,
+    "[java]": {
+        "editor.defaultFormatter": "redhat.java",
+        "editor.formatOnSave": true
+    }
+}

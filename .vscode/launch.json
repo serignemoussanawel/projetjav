@@ -1,0 +1,16 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "JavaFX Application",
+            "type": "java",
+            "name": "Launch Main",
+            "request": "launch",
+            "mainClass": "com.campus.Main",
+            "projectName": "campus-room-manager",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "args": ""
+        }
+    ]
+}
