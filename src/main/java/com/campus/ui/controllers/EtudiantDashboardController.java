@@ -41,7 +41,7 @@ public class EtudiantDashboardController {
 
     private BorderPane createLayout() {
         BorderPane root = new BorderPane();
-        root.setStyle("-fx-padding: 10;");
+        root.getStyleClass().add("dashboard-root");
 
         HBox header = createHeader();
         root.setTop(header);
@@ -54,16 +54,17 @@ public class EtudiantDashboardController {
 
     private HBox createHeader() {
         HBox header = new HBox(20);
-        header.setStyle("-fx-padding: 10; -fx-background-color: #e0e0e0;");
+        header.getStyleClass().add("dashboard-header");
         header.setAlignment(Pos.CENTER_LEFT);
 
         Label title = new Label("Espace Étudiant");
-        title.setStyle("-fx-font-size: 18; -fx-font-weight: bold;");
+        title.getStyleClass().add("dashboard-title");
 
         Label userLabel = new Label("Connecté: " + currentUser.getNomComplet());
-        userLabel.setStyle("-fx-font-size: 12;");
+        userLabel.getStyleClass().add("header-info");
 
         Button logoutButton = new Button("Déconnexion");
+        logoutButton.getStyleClass().add("logout-button");
         logoutButton.setOnAction(e -> logout());
 
         HBox spacer = new HBox();
@@ -75,17 +76,17 @@ public class EtudiantDashboardController {
 
     private VBox createContent() {
         VBox content = new VBox(15);
-        content.setStyle("-fx-padding: 20; -fx-alignment: CENTER;");
+        content.getStyleClass().add("content-panel");
 
         // Find the student
         Etudiant etudiant = findEtudiantByUser();
 
         if (etudiant != null) {
             Label infoLabel = new Label("Informations Personnelles");
-            infoLabel.setStyle("-fx-font-size: 14; -fx-font-weight: bold;");
+            infoLabel.getStyleClass().add("section-title");
 
             VBox infoBox = new VBox(10);
-            infoBox.setStyle("-fx-padding: 10; -fx-border-color: #cccccc; -fx-border-width: 1;");
+            infoBox.getStyleClass().add("info-box");
 
             Label nameLabel = new Label("Nom: " + etudiant.getNomComplet());
             Label matriculeLabel = new Label("Numéro Matricule: " + etudiant.getNumeroMatricule());
@@ -99,12 +100,12 @@ public class EtudiantDashboardController {
             // Room information
             if (etudiant.hasRoom()) {
                 Label chambreLabel = new Label("Chambre Affectée");
-                chambreLabel.setStyle("-fx-font-size: 14; -fx-font-weight: bold;");
+                chambreLabel.getStyleClass().add("section-title");
 
                 Chambre chambre = gestionChambre.getChambre(etudiant.getChambreId());
                 if (chambre != null) {
                     VBox chambreBox = new VBox(10);
-                    chambreBox.setStyle("-fx-padding: 10; -fx-border-color: #4CAF50; -fx-border-width: 2;");
+                    chambreBox.getStyleClass().add("success-box");
 
                     Label codeLabel = new Label("Code: " + chambre.getCode());
                     Label typeLabel = new Label("Type: " + chambre.getType());
@@ -122,7 +123,7 @@ public class EtudiantDashboardController {
                 }
             } else {
                 Label noRoomLabel = new Label("Vous n'avez pas encore de chambre affectée");
-                noRoomLabel.setStyle("-fx-text-fill: #ff9800; -fx-font-size: 12;");
+                noRoomLabel.getStyleClass().add("warning-text");
                 content.getChildren().add(noRoomLabel);
             }
         }

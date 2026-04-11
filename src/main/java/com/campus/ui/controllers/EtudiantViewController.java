@@ -69,6 +69,7 @@ public class EtudiantViewController {
     }
 
     private void setupTable() {
+        tableView.getStyleClass().add("dashboard-table");
         TableColumn<Etudiant, String> nomCol = new TableColumn<>("Nom");
         nomCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().getNomComplet()));
 
@@ -102,7 +103,7 @@ public class EtudiantViewController {
         dialog.setTitle("Ajouter un Étudiant");
 
         VBox content = new VBox(10);
-        content.setStyle("-fx-padding: 15;");
+        content.getStyleClass().add("content-panel");
 
         TextField nomField = new TextField();
         nomField.setPromptText("Nom");

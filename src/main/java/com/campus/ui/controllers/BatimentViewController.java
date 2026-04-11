@@ -35,11 +35,11 @@ public class BatimentViewController {
 
     private VBox createLayout() {
         VBox root = new VBox(10);
-        root.setStyle("-fx-padding: 15;");
+        root.getStyleClass().add("content-panel");
 
         // Header
         Label title = new Label("Gestion des Bâtiments");
-        title.setStyle("-fx-font-size: 16; -fx-font-weight: bold;");
+        title.getStyleClass().add("view-title");
 
         // Buttons
         HBox buttonBox = new HBox(10);
@@ -63,6 +63,7 @@ public class BatimentViewController {
     }
 
     private void setupTable() {
+        tableView.getStyleClass().add("dashboard-table");
         TableColumn<Batiment, String> idCol = new TableColumn<>("ID");
         idCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().getId()));
 
@@ -89,7 +90,7 @@ public class BatimentViewController {
         dialog.setTitle("Ajouter un Bâtiment");
 
         VBox content = new VBox(10);
-        content.setStyle("-fx-padding: 15;");
+        content.getStyleClass().add("content-panel");
 
         TextField idField = new TextField();
         idField.setPromptText("ID");

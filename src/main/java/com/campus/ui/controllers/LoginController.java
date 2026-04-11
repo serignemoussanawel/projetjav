@@ -2,7 +2,6 @@ package com.campus.ui.controllers;
 
 import com.campus.managers.*;
 import com.campus.models.*;
-import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -10,22 +9,17 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 public class LoginController {
-    @FXML private TextField emailField;
-    @FXML private PasswordField passwordField;
-    @FXML private Label errorLabel;
-    @FXML private Button loginButton;
-    
+
     private GestionUtilisateur gestionUtilisateur;
     private Stage primaryStage;
+    private TextField emailField;
+    private PasswordField passwordField;
+    private Button loginButton;
+    private Label errorLabel;
 
     public LoginController(GestionUtilisateur gestionUtilisateur, Stage primaryStage) {
         this.gestionUtilisateur = gestionUtilisateur;
         this.primaryStage = primaryStage;
-    }
-
-    @FXML
-    public void initialize() {
-        // Setup UI
     }
 
     public void handleLogin() {
@@ -50,42 +44,58 @@ public class LoginController {
         GestionBatiment gestionBatiment = new GestionBatiment();
         GestionChambre gestionChambre = new GestionChambre();
         GestionEtudiant gestionEtudiant = new GestionEtudiant();
-        
+
         if (user.getRole() == UserRole.ADMIN) {
-            new AdminDashboardController(gestionUtilisateur, gestionBatiment, gestionChambre, gestionEtudiant, primaryStage).show();
+            new AdminDashboardController(gestionUtilisateur, gestionBatiment, gestionChambre, gestionEtudiant,
+                    primaryStage).show();
         } else if (user.getRole() == UserRole.CHEF_BATIMENT) {
-            new ChefBatimentDashboardController(gestionUtilisateur, gestionBatiment, gestionChambre, gestionEtudiant, primaryStage).show();
+            new ChefBatimentDashboardController(gestionUtilisateur, gestionBatiment, gestionChambre, gestionEtudiant,
+                    primaryStage).show();
         } else {
-            new EtudiantDashboardController(gestionUtilisateur, gestionEtudiant, gestionChambre, gestionBatiment, primaryStage).show();
+            new EtudiantDashboardController(gestionUtilisateur, gestionEtudiant, gestionChambre, gestionBatiment,
+                    primaryStage).show();
         }
     }
 
     public VBox createLoginView() {
+
         VBox root = new VBox(15);
         root.setPrefSize(400, 300);
-        root.setStyle("-fx-padding: 30; -fx-alignment: CENTER;");
+        root.setAlignment(Pos.CENTER);
+        root.getStyleClass().add("login-root");
 
         Label titleLabel = new Label("Campus Room Manager");
-        titleLabel.setStyle("-fx-font-size: 24; -fx-font-weight: bold;");
+        titleLabel.getStyleClass().add("login-title");
 
         Label emailLabel = new Label("Email:");
+        emailLabel.getStyleClass().add("login-label");
+
         emailField = new TextField();
         emailField.setPromptText("Entrez votre email");
+        emailField.getStyleClass().add("form-field");
 
         Label passwordLabel = new Label("Mot de passe:");
+        passwordLabel.getStyleClass().add("login-label");
+
         passwordField = new PasswordField();
         passwordField.setPromptText("Entrez votre mot de passe");
+        passwordField.getStyleClass().add("form-field");
 
         loginButton = new Button("Connexion");
         loginButton.setPrefWidth(150);
-        loginButton.setStyle("-fx-font-size: 14;");
+        loginButton.getStyleClass().add("login-button");
         loginButton.setOnAction(e -> handleLogin());
 
         errorLabel = new Label();
-        errorLabel.setStyle("-fx-text-fill: red;");
+        errorLabel.getStyleClass().add("error-label");
 
-        root.getChildren().addAll(titleLabel, emailLabel, emailField, passwordLabel, 
-                                   passwordField, loginButton, errorLabel);
+        root.getChildren().addAll(
+                titleLabel,
+                emailLabel, emailField,
+                passwordLabel, passwordField,
+                loginButton,
+                errorLabel);
+
         return root;
     }
 }

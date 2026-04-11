@@ -35,10 +35,10 @@ public class StatisticsViewController {
 
     private VBox createLayout() {
         VBox root = new VBox(15);
-        root.setStyle("-fx-padding: 15;");
+        root.getStyleClass().add("content-panel");
 
-        Label title = new Label("Statistiques Générales");
-        title.setStyle("-fx-font-size: 16; -fx-font-weight: bold;");
+        Label title = new Label("Statistiques de Gestion");
+        title.getStyleClass().add("view-title");
 
         GridPane statsGrid = createStatsGrid();
         BarChart<String, Number> chart = createChart();

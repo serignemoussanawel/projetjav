@@ -43,7 +43,7 @@ public class ChefBatimentDashboardController {
 
     private BorderPane createLayout() {
         BorderPane root = new BorderPane();
-        root.setStyle("-fx-padding: 10;");
+        root.getStyleClass().add("dashboard-root");
 
         HBox header = createHeader();
         root.setTop(header);
@@ -56,19 +56,20 @@ public class ChefBatimentDashboardController {
 
     private HBox createHeader() {
         HBox header = new HBox(20);
-        header.setStyle("-fx-padding: 10; -fx-background-color: #e0e0e0;");
+        header.getStyleClass().add("dashboard-header");
         header.setAlignment(Pos.CENTER_LEFT);
 
         Label title = new Label("Tableau de bord - Chef de Bâtiment");
-        title.setStyle("-fx-font-size: 18; -fx-font-weight: bold;");
+        title.getStyleClass().add("dashboard-title");
 
         Label batimentLbl = new Label("Bâtiment: " + gestionBatiment.getBatiment(batimentId).getNom());
-        batimentLbl.setStyle("-fx-font-size: 12;");
+        batimentLbl.getStyleClass().add("header-info");
 
         Label userLabel = new Label("Connecté: " + currentUser.getNomComplet());
-        userLabel.setStyle("-fx-font-size: 12;");
+        userLabel.getStyleClass().add("header-info");
 
         Button logoutButton = new Button("Déconnexion");
+        logoutButton.getStyleClass().add("logout-button");
         logoutButton.setOnAction(e -> logout());
 
         HBox spacer = new HBox();
@@ -79,23 +80,23 @@ public class ChefBatimentDashboardController {
     }
 
     private VBox createMenu() {
-        VBox menu = new VBox(10);
-        menu.setStyle("-fx-padding: 10; -fx-border-color: #cccccc; -fx-border-width: 0 1 0 0;");
+        VBox menu = new VBox(14);
+        menu.getStyleClass().add("dashboard-menu");
         menu.setPrefWidth(200);
 
         Label menuTitle = new Label("Menu");
-        menuTitle.setStyle("-fx-font-size: 14; -fx-font-weight: bold;");
+        menuTitle.getStyleClass().add("menu-title");
 
         Button chambresBtn = new Button("Mes Chambres");
-        chambresBtn.setPrefWidth(180);
+        chambresBtn.getStyleClass().add("dashboard-menu-button");
         chambresBtn.setOnAction(e -> showChambres());
 
         Button etudiantsBtn = new Button("Étudiants du Bâtiment");
-        etudiantsBtn.setPrefWidth(180);
+        etudiantsBtn.getStyleClass().add("dashboard-menu-button");
         etudiantsBtn.setOnAction(e -> showEtudiants());
 
         Button disponibiliteBtn = new Button("Disponibilité");
-        disponibiliteBtn.setPrefWidth(180);
+        disponibiliteBtn.getStyleClass().add("dashboard-menu-button");
         disponibiliteBtn.setOnAction(e -> showDisponibilite());
 
         menu.getChildren().addAll(menuTitle, chambresBtn, etudiantsBtn, disponibiliteBtn);
@@ -103,28 +104,102 @@ public class ChefBatimentDashboardController {
     }
 
     private void showChambres() {
-        // Show chambres du bâtiment
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Chambres du Bâtiment");
-        alert.setHeaderText("Liste des chambres");
-        alert.setContentText("Fonctionnalité en cours de développement");
-        alert.showAndWait();
-    }
+    TableView<Chambre> table = new TableView<>();
+    table.getStyleClass().add("dashboard-table");
+
+    TableColumn<Chambre, String> codeCol = new TableColumn<>("Code");
+    codeCol.setCellValueFactory(c -> new javafx.beans.property.SimpleStringProperty(c.getValue().getCode()));
+
+    TableColumn<Chambre, String> typeCol = new TableColumn<>("Type");
+    typeCol.setCellValueFactory(c -> new javafx.beans.property.SimpleStringProperty(c.getValue().getType()));
+
+    TableColumn<Chambre, String> statutCol = new TableColumn<>("Statut");
+    statutCol.setCellValueFactory(c -> new javafx.beans.property.SimpleStringProperty(
+        c.getValue().isLibre() ? "Disponible" : "Occupée"
+    ));
+
+    table.getColumns().addAll(codeCol, typeCol, statutCol);
+
+    var chambres = gestionChambre.getAllChambres().stream()
+        .filter(c -> c.getBatimentId().equals(batimentId))
+        .toList();
+
+    table.setItems(javafx.collections.FXCollections.observableArrayList(chambres));
+
+    VBox content = new VBox(18, new Label("Liste des chambres"), table);
+    content.getStyleClass().add("content-panel");
+    ((BorderPane) primaryStage.getScene().getRoot()).setCenter(content);
+}
 
     private void showEtudiants() {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Étudiants");
-        alert.setHeaderText("Liste des étudiants");
-        alert.setContentText("Fonctionnalité en cours de développement");
-        alert.showAndWait();
-    }
+    TableView<Etudiant> table = new TableView<>();
+    table.getStyleClass().add("dashboard-table");
+
+    TableColumn<Etudiant, String> nomCol = new TableColumn<>("Nom");
+    nomCol.setCellValueFactory(c -> new javafx.beans.property.SimpleStringProperty(c.getValue().getNomComplet()));
+
+    TableColumn<Etudiant, String> matriculeCol = new TableColumn<>("Matricule");
+    matriculeCol.setCellValueFactory(c -> new javafx.beans.property.SimpleStringProperty(c.getValue().getNumeroMatricule()));
+
+    TableColumn<Etudiant, String> chambreCol = new TableColumn<>("Chambre");
+    chambreCol.setCellValueFactory(c -> {
+        Etudiant e = c.getValue();
+        if (e.hasRoom()) {
+            Chambre ch = gestionChambre.getChambre(e.getChambreId());
+            return new javafx.beans.property.SimpleStringProperty(ch != null ? ch.getCode() : "N/A");
+        }
+        return new javafx.beans.property.SimpleStringProperty("Non affecté");
+    });
+
+    table.getColumns().addAll(nomCol, matriculeCol, chambreCol);
+
+    var etudiants = gestionEtudiant.getAllEtudiants().stream()
+        .filter(e -> e.hasRoom())
+        .filter(e -> {
+            Chambre ch = gestionChambre.getChambre(e.getChambreId());
+            return ch != null && ch.getBatimentId().equals(batimentId);
+        })
+        .toList();
+
+    table.setItems(javafx.collections.FXCollections.observableArrayList(etudiants));
+
+    VBox content = new VBox(18, new Label("Étudiants du bâtiment"), table);
+    content.getStyleClass().add("content-panel");
+    ((BorderPane) primaryStage.getScene().getRoot()).setCenter(content);
+}
 
     private void showDisponibilite() {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Disponibilité");
-        alert.setHeaderText("Chambre disponibles");
-        alert.setContentText("Fonctionnalité en cours de développement");
-        alert.showAndWait();
+        var chambres = gestionChambre.getAllChambres().stream()
+            .filter(c -> c.getBatimentId().equals(batimentId))
+            .toList();
+
+        long libres = chambres.stream().filter(Chambre::isLibre).count();
+        long occupees = chambres.size() - libres;
+
+        Label summary = new Label("Chambres libres : " + libres + "    Occupées : " + occupees);
+        summary.getStyleClass().add("summary-label");
+
+        TableView<Chambre> table = new TableView<>();
+        table.getStyleClass().add("dashboard-table");
+
+        TableColumn<Chambre, String> codeCol = new TableColumn<>("Code");
+        codeCol.setCellValueFactory(c -> new javafx.beans.property.SimpleStringProperty(c.getValue().getCode()));
+
+        TableColumn<Chambre, String> typeCol = new TableColumn<>("Type");
+        typeCol.setCellValueFactory(c -> new javafx.beans.property.SimpleStringProperty(c.getValue().getType()));
+
+        TableColumn<Chambre, String> statutCol = new TableColumn<>("Statut");
+        statutCol.setCellValueFactory(c -> new javafx.beans.property.SimpleStringProperty(
+            c.getValue().isLibre() ? "Disponible" : "Occupée"
+        ));
+
+        table.getColumns().addAll(codeCol, typeCol, statutCol);
+        table.setItems(javafx.collections.FXCollections.observableArrayList(chambres));
+
+        VBox content = new VBox(18, summary, table);
+        content.getStyleClass().add("content-panel");
+
+        ((BorderPane) primaryStage.getScene().getRoot()).setCenter(content);
     }
 
     private void logout() {

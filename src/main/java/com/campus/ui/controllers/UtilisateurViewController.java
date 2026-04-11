@@ -32,10 +32,10 @@ public class UtilisateurViewController {
 
     private VBox createLayout() {
         VBox root = new VBox(10);
-        root.setStyle("-fx-padding: 15;");
+        root.getStyleClass().add("content-panel");
 
         Label title = new Label("Gestion des Utilisateurs");
-        title.setStyle("-fx-font-size: 16; -fx-font-weight: bold;");
+        title.getStyleClass().add("view-title");
 
         HBox buttonBox = createButtonBox();
 

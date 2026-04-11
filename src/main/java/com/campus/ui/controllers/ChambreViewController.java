@@ -86,6 +86,7 @@ public class ChambreViewController {
     }
 
     private void setupTable() {
+        tableView.getStyleClass().add("dashboard-table");
         TableColumn<Chambre, String> codeCol = new TableColumn<>("Code");
         codeCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().getCode()));
 
@@ -128,7 +129,7 @@ public class ChambreViewController {
         dialog.setTitle("Ajouter une Chambre");
 
         VBox content = new VBox(10);
-        content.setStyle("-fx-padding: 15;");
+        content.getStyleClass().add("content-panel");
 
         TextField codeField = new TextField();
         codeField.setPromptText("Code (ex: A-101)");

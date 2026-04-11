@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="roomGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#9B59B6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8E44AD;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Room outline -->
+  <rect x="40" y="50" width="120" height="100" fill="url(#roomGrad)" stroke="#6C3483" stroke-width="2" rx="5"/>
+  
+  <!-- Bed -->
+  <rect x="55" y="70" width="50" height="40" fill="#D4AF37" stroke="#B8860B" stroke-width="2"/>
+  <ellipse cx="80" cy="88" rx="20" ry="12" fill="#F0E68C"/>
+  
+  <!-- Door -->
+  <rect x="155" y="120" width="20" height="30" fill="#A0522D" stroke="#654321" stroke-width="1"/>
+  <circle cx="172" cy="135" r="2" fill="#FFD700"/>
+  
+  <!-- Window -->
+  <rect x="45" y="55" width="25" height="20" fill="#87CEEB" stroke="#4682B4" stroke-width="1"/>
+  <line x1="57.5" y1="55" x2="57.5" y2="75" stroke="#4682B4" stroke-width="1"/>
+  <line x1="45" y1="65" x2="70" y2="65" stroke="#4682B4" stroke-width="1"/>
+  
+  <!-- Carpet -->
+  <ellipse cx="115" cy="110" rx="35" ry="25" fill="#FF69B4" opacity="0.6"/>
+</svg>

@@ -16,7 +16,8 @@ public class Main extends Application {
 
         // Setup login screen
         LoginController loginController = new LoginController(gestionUtilisateur, primaryStage);
-        Scene scene = new Scene(loginController.createLoginView(), 400, 300);
+        Scene scene = new Scene(loginController.createLoginView(), 600, 450);
+        scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
 
         primaryStage.setTitle("Campus Room Manager - Login");
         primaryStage.setScene(scene);

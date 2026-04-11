@@ -56,6 +56,10 @@ public class Chambre {
         return "Libre".equals(etat);
     }
 
+    public boolean isDisponible() {
+        return isLibre();
+    }
+
     public boolean isOccupee() {
         return "Occupée".equals(etat);
     }

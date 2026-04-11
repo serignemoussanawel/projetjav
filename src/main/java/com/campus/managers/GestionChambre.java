@@ -14,21 +14,19 @@ public class GestionChambre {
     }
 
     private void initialiserDonnees() {
-        // Chambres du Bâtiment A
-        addChambre(new Chambre("C1", "A-101", 101, "B1", 1, 2, "Double"));
-        addChambre(new Chambre("C2", "A-102", 102, "B1", 1, 1, "Simple"));
-        addChambre(new Chambre("C3", "A-201", 201, "B1", 2, 3, "Suite"));
-        addChambre(new Chambre("C4", "A-202", 202, "B1", 2, 2, "Double"));
-        addChambre(new Chambre("C5", "A-301", 301, "B1", 3, 1, "Simple"));
-
-        // Chambres du Bâtiment B
-        addChambre(new Chambre("C6", "B-101", 101, "B2", 1, 2, "Double"));
-        addChambre(new Chambre("C7", "B-102", 102, "B2", 1, 1, "Simple"));
-        addChambre(new Chambre("C8", "B-201", 201, "B2", 2, 3, "Suite"));
-
-        // Chambres du Bâtiment C
-        addChambre(new Chambre("C9", "C-101", 101, "B3", 1, 2, "Double"));
-        addChambre(new Chambre("C10", "C-102", 102, "B3", 1, 1, "Simple"));
+        //chambres B1
+        creerChambre("B1", 1, 2, "Double");
+        creerChambre("B1", 1, 1, "Simple");
+        creerChambre("B1", 2, 3, "Suite");
+        creerChambre("B1", 2, 2, "Double");
+        creerChambre("B1", 3, 1, "Simple");
+        //chambres B2
+        creerChambre("B2", 1, 2, "Double");
+        creerChambre("B2", 1, 1, "Simple");
+        creerChambre("B2", 2, 3, "Suite");
+        //chambres B3
+        creerChambre("B3", 1, 2, "Double");
+        creerChambre("B3", 1, 1, "Simple");
     }
 
     public void addChambre(Chambre chambre) {
@@ -104,9 +102,30 @@ public class GestionChambre {
         return (int) chambres.values().stream().filter(Chambre::isOccupee).count();
     }
 
-    public String generateCode(String batimentId, int numero) {
-        Batiment b = null;
-        // This will need to be refactored with proper batiment lookup
-        return batimentId + "-" + numero;
+public int getNextNumero(String batimentId, int etage) {
+    return chambres.values().stream()
+            .filter(c -> c.getBatimentId().equals(batimentId) && c.getEtage() == etage)
+            .mapToInt(Chambre::getNumero)
+            .max()
+            .orElse(0) + 1;
+}
+
+public Chambre creerChambre(String batimentId, int etage, int capacite, String type) {
+    int numero = getNextNumero(batimentId, etage);
+    String code = generateCode(batimentId, etage, numero);
+
+    String id = "C" + nextId++;
+
+    Chambre chambre = new Chambre(id, code, numero, batimentId, etage, capacite, type);
+    addChambre(chambre);
+
+    return chambre;
+}
+
+
+    public String generateCode(String batimentId, int etage, int numero) {
+    return batimentId.toUpperCase() + "-" 
+           + etage 
+           + String.format("%02d", numero);
     }
 }
