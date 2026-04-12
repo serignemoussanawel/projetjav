@@ -41,7 +41,7 @@ public class AdminDashboardController {
 
     public void show() {
         root = createLayout();
-        Scene scene = new Scene(root, 1000, 700);
+        Scene scene = new Scene(root, 900, 600);
         primaryStage.setScene(scene);
         primaryStage.setTitle("Admin Dashboard - Campus Room Manager");
         primaryStage.show();
@@ -147,31 +147,28 @@ public class AdminDashboardController {
 
     // 🔥 Navigation dynamique (pro)
     private void showBatimentsView() {
-        BatimentViewController controller = new BatimentViewController(gestionBatiment, gestionChambre, primaryStage,
-                this);
+        BatimentViewController controller = new BatimentViewController(gestionBatiment);
         controller.show();
     }
 
     private void showChambresView() {
-        ChambreViewController controller = new ChambreViewController(gestionBatiment, gestionChambre, primaryStage,
-                this);
+        ChambreViewController controller = new ChambreViewController(gestionBatiment, gestionChambre);
         controller.show();
     }
 
     private void showEtudiantsView() {
-        EtudiantViewController controller = new EtudiantViewController(gestionEtudiant, gestionChambre, primaryStage,
-                this);
+        EtudiantViewController controller = new EtudiantViewController(gestionEtudiant, gestionChambre);
         controller.show();
     }
 
     private void showUtilisateursView() {
-        UtilisateurViewController controller = new UtilisateurViewController(gestionUtilisateur, primaryStage, this);
+        UtilisateurViewController controller = new UtilisateurViewController(gestionUtilisateur);
         controller.show();
     }
 
     private void showStatistiques() {
         StatisticsViewController controller = new StatisticsViewController(gestionBatiment, gestionChambre,
-                gestionEtudiant, primaryStage);
+                gestionEtudiant);
         controller.show();
     }
 

@@ -14,15 +14,10 @@ public class EtudiantViewController {
     private GestionEtudiant gestionEtudiant;
     private GestionChambre gestionChambre;
     private TableView<Etudiant> tableView;
-    private Stage primaryStage;
-    private AdminDashboardController parentController;
 
-    public EtudiantViewController(GestionEtudiant gestionEtudiant, GestionChambre gestionChambre,
-                                Stage primaryStage, AdminDashboardController parentController) {
+    public EtudiantViewController(GestionEtudiant gestionEtudiant, GestionChambre gestionChambre) {
         this.gestionEtudiant = gestionEtudiant;
         this.gestionChambre = gestionChambre;
-        this.primaryStage = primaryStage;
-        this.parentController = parentController;
     }
 
     public void show() {
@@ -51,7 +46,7 @@ public class EtudiantViewController {
 
     private HBox createButtonBox() {
         HBox box = new HBox(10);
-        
+
         Button addBtn = new Button("Ajouter");
         Button editBtn = new Button("Modifier");
         Button affecterBtn = new Button("Affecter une Chambre");
@@ -71,13 +66,16 @@ public class EtudiantViewController {
     private void setupTable() {
         tableView.getStyleClass().add("dashboard-table");
         TableColumn<Etudiant, String> nomCol = new TableColumn<>("Nom");
-        nomCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().getNomComplet()));
+        nomCol.setCellValueFactory(
+                cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().getNomComplet()));
 
         TableColumn<Etudiant, String> matriculeCol = new TableColumn<>("Matricule");
-        matriculeCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().getNumeroMatricule()));
+        matriculeCol.setCellValueFactory(
+                cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().getNumeroMatricule()));
 
         TableColumn<Etudiant, String> specialiteCol = new TableColumn<>("Spécialité");
-        specialiteCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().getSpecialite()));
+        specialiteCol.setCellValueFactory(
+                cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().getSpecialite()));
 
         TableColumn<Etudiant, String> chambresCol = new TableColumn<>("Chambre");
         chambresCol.setCellValueFactory(cellData -> {
@@ -89,7 +87,10 @@ public class EtudiantViewController {
             return new javafx.beans.property.SimpleStringProperty("Non affectée");
         });
 
-        tableView.getColumns().addAll(nomCol, matriculeCol, specialiteCol, chambresCol);
+        tableView.getColumns().add(nomCol);
+        tableView.getColumns().add(matriculeCol);
+        tableView.getColumns().add(specialiteCol);
+        tableView.getColumns().add(chambresCol);
         tableView.setPrefHeight(450);
     }
 
@@ -124,13 +125,12 @@ public class EtudiantViewController {
         saveBtn.setOnAction(e -> {
             if (validateInput(nomField, prenomField, emailField, matriculeField, specialiteField)) {
                 Etudiant etd = new Etudiant(
-                    "E" + System.currentTimeMillis(),
-                    nomField.getText(),
-                    prenomField.getText(),
-                    emailField.getText(),
-                    matriculeField.getText(),
-                    specialiteField.getText()
-                );
+                        "E" + System.currentTimeMillis(),
+                        nomField.getText(),
+                        prenomField.getText(),
+                        emailField.getText(),
+                        matriculeField.getText(),
+                        specialiteField.getText());
                 gestionEtudiant.addEtudiant(etd);
                 refreshTable();
                 dialog.close();
@@ -138,13 +138,12 @@ public class EtudiantViewController {
         });
 
         content.getChildren().addAll(
-            new Label("Nom:"), nomField,
-            new Label("Prénom:"), prenomField,
-            new Label("Email:"), emailField,
-            new Label("Matricule:"), matriculeField,
-            new Label("Spécialité:"), specialiteField,
-            saveBtn
-        );
+                new Label("Nom:"), nomField,
+                new Label("Prénom:"), prenomField,
+                new Label("Email:"), emailField,
+                new Label("Matricule:"), matriculeField,
+                new Label("Spécialité:"), specialiteField,
+                saveBtn);
 
         dialog.setScene(new Scene(content, 400, 400));
         dialog.show();
@@ -180,12 +179,11 @@ public class EtudiantViewController {
         });
 
         content.getChildren().addAll(
-            new Label("Nom:"), nomField,
-            new Label("Prénom:"), prenomField,
-            new Label("Email:"), emailField,
-            new Label("Spécialité:"), specialiteField,
-            saveBtn
-        );
+                new Label("Nom:"), nomField,
+                new Label("Prénom:"), prenomField,
+                new Label("Email:"), emailField,
+                new Label("Spécialité:"), specialiteField,
+                saveBtn);
 
         dialog.setScene(new Scene(content, 400, 350));
         dialog.show();
@@ -225,11 +223,10 @@ public class EtudiantViewController {
         });
 
         content.getChildren().addAll(
-            etuLabel,
-            new Label("Chambre disponible:"),
-            chambreCombo,
-            affecterBtn
-        );
+                etuLabel,
+                new Label("Chambre disponible:"),
+                chambreCombo,
+                affecterBtn);
 
         dialog.setScene(new Scene(content, 400, 250));
         dialog.show();

@@ -20,10 +20,10 @@ public class ChefBatimentDashboardController {
     private String batimentId;
 
     public ChefBatimentDashboardController(GestionUtilisateur gestionUtilisateur,
-                                         GestionBatiment gestionBatiment,
-                                         GestionChambre gestionChambre,
-                                         GestionEtudiant gestionEtudiant,
-                                         Stage primaryStage) {
+            GestionBatiment gestionBatiment,
+            GestionChambre gestionChambre,
+            GestionEtudiant gestionEtudiant,
+            Stage primaryStage) {
         this.gestionUtilisateur = gestionUtilisateur;
         this.gestionBatiment = gestionBatiment;
         this.gestionChambre = gestionChambre;
@@ -104,74 +104,78 @@ public class ChefBatimentDashboardController {
     }
 
     private void showChambres() {
-    TableView<Chambre> table = new TableView<>();
-    table.getStyleClass().add("dashboard-table");
+        TableView<Chambre> table = new TableView<>();
+        table.getStyleClass().add("dashboard-table");
 
-    TableColumn<Chambre, String> codeCol = new TableColumn<>("Code");
-    codeCol.setCellValueFactory(c -> new javafx.beans.property.SimpleStringProperty(c.getValue().getCode()));
+        TableColumn<Chambre, String> codeCol = new TableColumn<>("Code");
+        codeCol.setCellValueFactory(c -> new javafx.beans.property.SimpleStringProperty(c.getValue().getCode()));
 
-    TableColumn<Chambre, String> typeCol = new TableColumn<>("Type");
-    typeCol.setCellValueFactory(c -> new javafx.beans.property.SimpleStringProperty(c.getValue().getType()));
+        TableColumn<Chambre, String> typeCol = new TableColumn<>("Type");
+        typeCol.setCellValueFactory(c -> new javafx.beans.property.SimpleStringProperty(c.getValue().getType()));
 
-    TableColumn<Chambre, String> statutCol = new TableColumn<>("Statut");
-    statutCol.setCellValueFactory(c -> new javafx.beans.property.SimpleStringProperty(
-        c.getValue().isLibre() ? "Disponible" : "Occupée"
-    ));
+        TableColumn<Chambre, String> statutCol = new TableColumn<>("Statut");
+        statutCol.setCellValueFactory(c -> new javafx.beans.property.SimpleStringProperty(
+                c.getValue().isLibre() ? "Disponible" : "Occupée"));
 
-    table.getColumns().addAll(codeCol, typeCol, statutCol);
+        table.getColumns().add(codeCol);
+        table.getColumns().add(typeCol);
+        table.getColumns().add(statutCol);
 
-    var chambres = gestionChambre.getAllChambres().stream()
-        .filter(c -> c.getBatimentId().equals(batimentId))
-        .toList();
+        var chambres = gestionChambre.getAllChambres().stream()
+                .filter(c -> c.getBatimentId().equals(batimentId))
+                .toList();
 
-    table.setItems(javafx.collections.FXCollections.observableArrayList(chambres));
+        table.setItems(javafx.collections.FXCollections.observableArrayList(chambres));
 
-    VBox content = new VBox(18, new Label("Liste des chambres"), table);
-    content.getStyleClass().add("content-panel");
-    ((BorderPane) primaryStage.getScene().getRoot()).setCenter(content);
-}
+        VBox content = new VBox(18, new Label("Liste des chambres"), table);
+        content.getStyleClass().add("content-panel");
+        ((BorderPane) primaryStage.getScene().getRoot()).setCenter(content);
+    }
 
     private void showEtudiants() {
-    TableView<Etudiant> table = new TableView<>();
-    table.getStyleClass().add("dashboard-table");
+        TableView<Etudiant> table = new TableView<>();
+        table.getStyleClass().add("dashboard-table");
 
-    TableColumn<Etudiant, String> nomCol = new TableColumn<>("Nom");
-    nomCol.setCellValueFactory(c -> new javafx.beans.property.SimpleStringProperty(c.getValue().getNomComplet()));
+        TableColumn<Etudiant, String> nomCol = new TableColumn<>("Nom");
+        nomCol.setCellValueFactory(c -> new javafx.beans.property.SimpleStringProperty(c.getValue().getNomComplet()));
 
-    TableColumn<Etudiant, String> matriculeCol = new TableColumn<>("Matricule");
-    matriculeCol.setCellValueFactory(c -> new javafx.beans.property.SimpleStringProperty(c.getValue().getNumeroMatricule()));
+        TableColumn<Etudiant, String> matriculeCol = new TableColumn<>("Matricule");
+        matriculeCol.setCellValueFactory(
+                c -> new javafx.beans.property.SimpleStringProperty(c.getValue().getNumeroMatricule()));
 
-    TableColumn<Etudiant, String> chambreCol = new TableColumn<>("Chambre");
-    chambreCol.setCellValueFactory(c -> {
-        Etudiant e = c.getValue();
-        if (e.hasRoom()) {
-            Chambre ch = gestionChambre.getChambre(e.getChambreId());
-            return new javafx.beans.property.SimpleStringProperty(ch != null ? ch.getCode() : "N/A");
-        }
-        return new javafx.beans.property.SimpleStringProperty("Non affecté");
-    });
+        TableColumn<Etudiant, String> chambreCol = new TableColumn<>("Chambre");
+        chambreCol.setCellValueFactory(c -> {
+            Etudiant e = c.getValue();
+            if (e.hasRoom()) {
+                Chambre ch = gestionChambre.getChambre(e.getChambreId());
+                return new javafx.beans.property.SimpleStringProperty(ch != null ? ch.getCode() : "N/A");
+            }
+            return new javafx.beans.property.SimpleStringProperty("Non affecté");
+        });
 
-    table.getColumns().addAll(nomCol, matriculeCol, chambreCol);
+        table.getColumns().add(nomCol);
+        table.getColumns().add(matriculeCol);
+        table.getColumns().add(chambreCol);
 
-    var etudiants = gestionEtudiant.getAllEtudiants().stream()
-        .filter(e -> e.hasRoom())
-        .filter(e -> {
-            Chambre ch = gestionChambre.getChambre(e.getChambreId());
-            return ch != null && ch.getBatimentId().equals(batimentId);
-        })
-        .toList();
+        var etudiants = gestionEtudiant.getAllEtudiants().stream()
+                .filter(e -> e.hasRoom())
+                .filter(e -> {
+                    Chambre ch = gestionChambre.getChambre(e.getChambreId());
+                    return ch != null && ch.getBatimentId().equals(batimentId);
+                })
+                .toList();
 
-    table.setItems(javafx.collections.FXCollections.observableArrayList(etudiants));
+        table.setItems(javafx.collections.FXCollections.observableArrayList(etudiants));
 
-    VBox content = new VBox(18, new Label("Étudiants du bâtiment"), table);
-    content.getStyleClass().add("content-panel");
-    ((BorderPane) primaryStage.getScene().getRoot()).setCenter(content);
-}
+        VBox content = new VBox(18, new Label("Étudiants du bâtiment"), table);
+        content.getStyleClass().add("content-panel");
+        ((BorderPane) primaryStage.getScene().getRoot()).setCenter(content);
+    }
 
     private void showDisponibilite() {
         var chambres = gestionChambre.getAllChambres().stream()
-            .filter(c -> c.getBatimentId().equals(batimentId))
-            .toList();
+                .filter(c -> c.getBatimentId().equals(batimentId))
+                .toList();
 
         long libres = chambres.stream().filter(Chambre::isLibre).count();
         long occupees = chambres.size() - libres;
@@ -190,10 +194,11 @@ public class ChefBatimentDashboardController {
 
         TableColumn<Chambre, String> statutCol = new TableColumn<>("Statut");
         statutCol.setCellValueFactory(c -> new javafx.beans.property.SimpleStringProperty(
-            c.getValue().isLibre() ? "Disponible" : "Occupée"
-        ));
+                c.getValue().isLibre() ? "Disponible" : "Occupée"));
 
-        table.getColumns().addAll(codeCol, typeCol, statutCol);
+        table.getColumns().add(codeCol);
+        table.getColumns().add(typeCol);
+        table.getColumns().add(statutCol);
         table.setItems(javafx.collections.FXCollections.observableArrayList(chambres));
 
         VBox content = new VBox(18, summary, table);
@@ -204,7 +209,8 @@ public class ChefBatimentDashboardController {
 
     private void logout() {
         gestionUtilisateur.logout();
-        primaryStage.setScene(new Scene(new LoginController(gestionUtilisateur, primaryStage).createLoginView(), 400, 300));
+        primaryStage
+                .setScene(new Scene(new LoginController(gestionUtilisateur, primaryStage).createLoginView(), 400, 300));
         primaryStage.setTitle("Campus Room Manager - Login");
     }
 }

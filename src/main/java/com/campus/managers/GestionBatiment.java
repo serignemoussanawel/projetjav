@@ -13,9 +13,16 @@ public class GestionBatiment {
     }
 
     private void initialiserDonnees() {
-        addBatiment(new Batiment("B1", "Bâtiment A", "123 Rue de l'Université", 4));
-        addBatiment(new Batiment("B2", "Bâtiment B", "124 Rue de l'Université", 5));
-        addBatiment(new Batiment("B3", "Bâtiment C", "125 Rue de l'Université", 3));
+        creerBatiment("Bâtiment A", "123 Rue de l'Université", 4);
+        creerBatiment("Bâtiment B", "124 Rue de l'Université", 5);
+        creerBatiment("Bâtiment C", "125 Rue de l'Université", 3);
+    }
+
+    public Batiment creerBatiment(String nom, String adresse, int etages) {
+        String id = "B" + nextId++;
+        Batiment batiment = new Batiment(id, nom, adresse, etages);
+        addBatiment(batiment);
+        return batiment;
     }
 
     public void addBatiment(Batiment batiment) {

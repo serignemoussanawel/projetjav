@@ -3,7 +3,6 @@ package com.campus.ui.controllers;
 import com.campus.managers.*;
 import com.campus.models.*;
 import javafx.geometry.Pos;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;

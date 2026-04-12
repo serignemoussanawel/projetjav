@@ -13,14 +13,9 @@ import javafx.stage.Stage;
 public class UtilisateurViewController {
     private GestionUtilisateur gestionUtilisateur;
     private TableView<Utilisateur> tableView;
-    private Stage primaryStage;
-    private AdminDashboardController parentController;
 
-    public UtilisateurViewController(GestionUtilisateur gestionUtilisateur,
-                                   Stage primaryStage, AdminDashboardController parentController) {
+    public UtilisateurViewController(GestionUtilisateur gestionUtilisateur) {
         this.gestionUtilisateur = gestionUtilisateur;
-        this.primaryStage = primaryStage;
-        this.parentController = parentController;
     }
 
     public void show() {
@@ -49,7 +44,7 @@ public class UtilisateurViewController {
 
     private HBox createButtonBox() {
         HBox box = new HBox(10);
-        
+
         Button addBtn = new Button("Ajouter");
         Button editBtn = new Button("Modifier");
         Button deleteBtn = new Button("Supprimer");
@@ -66,20 +61,25 @@ public class UtilisateurViewController {
 
     private void setupTable() {
         TableColumn<Utilisateur, String> nomCol = new TableColumn<>("Nom");
-        nomCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().getNomComplet()));
+        nomCol.setCellValueFactory(
+                cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().getNomComplet()));
 
         TableColumn<Utilisateur, String> emailCol = new TableColumn<>("Email");
-        emailCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().getEmail()));
+        emailCol.setCellValueFactory(
+                cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().getEmail()));
 
         TableColumn<Utilisateur, String> roleCol = new TableColumn<>("Rôle");
-        roleCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().getRole().getDisplayName()));
+        roleCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(
+                cellData.getValue().getRole().getDisplayName()));
 
         TableColumn<Utilisateur, String> actifCol = new TableColumn<>("Statut");
         actifCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(
-            cellData.getValue().isActif() ? "Actif" : "Inactif"
-        ));
+                cellData.getValue().isActif() ? "Actif" : "Inactif"));
 
-        tableView.getColumns().addAll(nomCol, emailCol, roleCol, actifCol);
+        tableView.getColumns().add(nomCol);
+        tableView.getColumns().add(emailCol);
+        tableView.getColumns().add(roleCol);
+        tableView.getColumns().add(actifCol);
         tableView.setPrefHeight(400);
     }
 
@@ -114,13 +114,12 @@ public class UtilisateurViewController {
         saveBtn.setOnAction(e -> {
             if (validateInput(nomField, prenomField, emailField, passwordField) && roleCombo.getValue() != null) {
                 Utilisateur u = new Utilisateur(
-                    "U" + System.currentTimeMillis(),
-                    nomField.getText(),
-                    prenomField.getText(),
-                    emailField.getText(),
-                    passwordField.getText(),
-                    roleCombo.getValue()
-                );
+                        "U" + System.currentTimeMillis(),
+                        nomField.getText(),
+                        prenomField.getText(),
+                        emailField.getText(),
+                        passwordField.getText(),
+                        roleCombo.getValue());
                 gestionUtilisateur.addUtilisateur(u);
                 refreshTable();
                 dialog.close();
@@ -128,13 +127,12 @@ public class UtilisateurViewController {
         });
 
         content.getChildren().addAll(
-            new Label("Nom:"), nomField,
-            new Label("Prénom:"), prenomField,
-            new Label("Email:"), emailField,
-            new Label("Mot de passe:"), passwordField,
-            new Label("Rôle:"), roleCombo,
-            saveBtn
-        );
+                new Label("Nom:"), nomField,
+                new Label("Prénom:"), prenomField,
+                new Label("Email:"), emailField,
+                new Label("Mot de passe:"), passwordField,
+                new Label("Rôle:"), roleCombo,
+                saveBtn);
 
         dialog.setScene(new Scene(content, 400, 400));
         dialog.show();
@@ -173,12 +171,11 @@ public class UtilisateurViewController {
         });
 
         content.getChildren().addAll(
-            new Label("Nom:"), nomField,
-            new Label("Prénom:"), prenomField,
-            new Label("Email:"), emailField,
-            new Label("Rôle:"), roleCombo,
-            saveBtn
-        );
+                new Label("Nom:"), nomField,
+                new Label("Prénom:"), prenomField,
+                new Label("Email:"), emailField,
+                new Label("Rôle:"), roleCombo,
+                saveBtn);
 
         dialog.setScene(new Scene(content, 400, 350));
         dialog.show();

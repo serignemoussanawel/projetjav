@@ -1,7 +1,6 @@
 package com.campus.managers;
 
 import com.campus.models.*;
-import java.time.LocalDate;
 import java.util.*;
 
 public class GestionChambre {
@@ -14,17 +13,17 @@ public class GestionChambre {
     }
 
     private void initialiserDonnees() {
-        //chambres B1
+        // chambres B1
         creerChambre("B1", 1, 2, "Double");
         creerChambre("B1", 1, 1, "Simple");
         creerChambre("B1", 2, 3, "Suite");
         creerChambre("B1", 2, 2, "Double");
         creerChambre("B1", 3, 1, "Simple");
-        //chambres B2
+        // chambres B2
         creerChambre("B2", 1, 2, "Double");
         creerChambre("B2", 1, 1, "Simple");
         creerChambre("B2", 2, 3, "Suite");
-        //chambres B3
+        // chambres B3
         creerChambre("B3", 1, 2, "Double");
         creerChambre("B3", 1, 1, "Simple");
     }
@@ -39,9 +38,9 @@ public class GestionChambre {
 
     public Chambre getChambreByCode(String code) {
         return chambres.values().stream()
-            .filter(c -> c.getCode().equals(code))
-            .findFirst()
-            .orElse(null);
+                .filter(c -> c.getCode().equals(code))
+                .findFirst()
+                .orElse(null);
     }
 
     public void updateChambre(Chambre chambre) {
@@ -58,20 +57,20 @@ public class GestionChambre {
 
     public List<Chambre> getChambresLibres() {
         return chambres.values().stream()
-            .filter(Chambre::isLibre)
-            .toList();
+                .filter(Chambre::isLibre)
+                .toList();
     }
 
     public List<Chambre> getChambresByBatiment(String batimentId) {
         return chambres.values().stream()
-            .filter(c -> c.getBatimentId().equals(batimentId))
-            .toList();
+                .filter(c -> c.getBatimentId().equals(batimentId))
+                .toList();
     }
 
     public List<Chambre> getChambresByEtage(String batimentId, int etage) {
         return chambres.values().stream()
-            .filter(c -> c.getBatimentId().equals(batimentId) && c.getEtage() == etage)
-            .toList();
+                .filter(c -> c.getBatimentId().equals(batimentId) && c.getEtage() == etage)
+                .toList();
     }
 
     public boolean affecterChambre(String chambreId, String etudiantId) {
@@ -102,30 +101,29 @@ public class GestionChambre {
         return (int) chambres.values().stream().filter(Chambre::isOccupee).count();
     }
 
-public int getNextNumero(String batimentId, int etage) {
-    return chambres.values().stream()
-            .filter(c -> c.getBatimentId().equals(batimentId) && c.getEtage() == etage)
-            .mapToInt(Chambre::getNumero)
-            .max()
-            .orElse(0) + 1;
-}
+    public int getNextNumero(String batimentId, int etage) {
+        return chambres.values().stream()
+                .filter(c -> c.getBatimentId().equals(batimentId) && c.getEtage() == etage)
+                .mapToInt(Chambre::getNumero)
+                .max()
+                .orElse(0) + 1;
+    }
 
-public Chambre creerChambre(String batimentId, int etage, int capacite, String type) {
-    int numero = getNextNumero(batimentId, etage);
-    String code = generateCode(batimentId, etage, numero);
+    public Chambre creerChambre(String batimentId, int etage, int capacite, String type) {
+        int numero = getNextNumero(batimentId, etage);
+        String code = generateCode(batimentId, etage, numero);
 
-    String id = "C" + nextId++;
+        String id = "C" + nextId++;
 
-    Chambre chambre = new Chambre(id, code, numero, batimentId, etage, capacite, type);
-    addChambre(chambre);
+        Chambre chambre = new Chambre(id, code, numero, batimentId, etage, capacite, type);
+        addChambre(chambre);
 
-    return chambre;
-}
-
+        return chambre;
+    }
 
     public String generateCode(String batimentId, int etage, int numero) {
-    return batimentId.toUpperCase() + "-" 
-           + etage 
-           + String.format("%02d", numero);
+        return batimentId.toUpperCase() + "-"
+                + etage
+                + String.format("%02d", numero);
     }
 }

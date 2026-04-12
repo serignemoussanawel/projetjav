@@ -1,6 +1,8 @@
 .dashboard-root {
     -fx-background-color: linear-gradient(to bottom, #f5f7fa 0%, #e8edf5 50%, #dfe8f0 100%);
+    background-color: linear-gradient(to bottom, #f5f7fa 0%, #e8edf5 50%, #dfe8f0 100%);
     -fx-padding: 16;
+    padding: 16;
     -fx-spacing: 18;
     -fx-background-radius: 0;
     -fx-effect: dropshadow(two-pass-box, rgba(0, 0, 0, 0.08), 10, 0, 0, 6);
@@ -8,300 +10,439 @@
 
 .dashboard-header {
     -fx-background-color: linear-gradient(to right, #2c3e50, #4c6cb3);
+    background-color: linear-gradient(to right, #2c3e50, #4c6cb3);
     -fx-padding: 20 24;
+    padding: 20 24;
     -fx-spacing: 12;
     -fx-alignment: center-left;
 }
 
 .dashboard-title {
     -fx-font-size: 22px;
+    font-size: 22px;
     -fx-font-weight: bold;
+    font-weight: bold;
     -fx-text-fill: white;
+    color: white;
 }
 
 .header-info {
     -fx-font-size: 12px;
+    font-size: 12px;
     -fx-text-fill: #dce5ff;
+    color: #dce5ff;
 }
 
 .logout-button {
     -fx-background-color: #e74c3c;
+    background-color: #e74c3c;
     -fx-text-fill: white;
+    color: white;
     -fx-font-weight: bold;
+    font-weight: bold;
     -fx-background-radius: 6;
+    border-radius: 6px;
     -fx-padding: 8 16;
+    padding: 8 16;
 }
 
 .logout-button:hover {
     -fx-background-color: #c0392b;
+    background-color: #c0392b;
 }
 
 .dashboard-menu {
     -fx-padding: 24;
+    padding: 24;
     -fx-background-color: white;
+    background-color: white;
     -fx-border-color: #d3d9e1;
+    border-color: #d3d9e1;
     -fx-border-width: 0 1 0 0;
+    border-width: 0 1 0 0;
 }
 
 .menu-title {
     -fx-font-size: 15px;
+    font-size: 15px;
     -fx-font-weight: bold;
+    font-weight: bold;
     -fx-text-fill: #2c3e50;
+    color: #2c3e50;
     -fx-padding: 0 0 12 0;
+    padding: 0 0 12 0;
 }
 
 .dashboard-menu-button {
     -fx-background-color: #3b6cb7;
+    background-color: #3b6cb7;
     -fx-text-fill: white;
+    color: white;
     -fx-font-weight: bold;
+    font-weight: bold;
     -fx-background-radius: 8;
+    border-radius: 8px;
     -fx-pref-width: 180px;
     -fx-padding: 10 14;
+    padding: 10 14;
 }
 
 .dashboard-menu-button:hover {
     -fx-background-color: #2a5a9a;
+    background-color: #2a5a9a;
 }
 
 .content-panel {
     -fx-padding: 24;
+    padding: 24;
     -fx-background-color: white;
+    background-color: white;
     -fx-border-color: #dfe3ea;
+    border-color: #dfe3ea;
     -fx-border-radius: 12;
+    border-radius: 12px;
     -fx-background-radius: 12;
     -fx-effect: dropshadow(two-pass-box, rgba(50, 50, 93, 0.05), 10, 0, 0, 4);
 }
 
 .summary-label {
     -fx-font-size: 15px;
+    font-size: 15px;
     -fx-font-weight: bold;
+    font-weight: bold;
     -fx-text-fill: #34495e;
+    color: #34495e;
 }
 
 .dashboard-table {
     -fx-border-color: transparent;
+    border-color: transparent;
     -fx-background-color: white;
+    background-color: white;
 }
 
 .table-view .column-header-background {
     -fx-background-color: #f4f7fb;
+    background-color: #f4f7fb;
 }
 
 .table-row-cell:filled:selected, .table-row-cell:filled:selected:hover {
     -fx-background-color: rgba(58, 123, 213, 0.16);
+    background-color: rgba(58, 123, 213, 0.16);
 }
 
 .login-root {
     -fx-padding: 30;
+    padding: 30;
     -fx-alignment: center;
     -fx-spacing: 12;
     -fx-background-color: linear-gradient(to bottom right, #eef2f7, #dfe8f0);
+    background-color: linear-gradient(to bottom right, #eef2f7, #dfe8f0);
 }
 
 .login-title {
     -fx-font-size: 24px;
+    font-size: 24px;
     -fx-font-weight: bold;
+    font-weight: bold;
     -fx-text-fill: #2c3e50;
+    color: #2c3e50;
 }
 
 .login-label {
     -fx-font-size: 13px;
+    font-size: 13px;
     -fx-text-fill: #34495e;
+    color: #34495e;
 }
 
 .form-field {
     -fx-pref-width: 320px;
     -fx-padding: 10 12;
+    padding: 10 12;
     -fx-border-color: #c7d2df;
+    border-color: #c7d2df;
     -fx-border-width: 1;
+    border-width: 1;
     -fx-background-color: white;
+    background-color: white;
     -fx-background-radius: 6;
     -fx-border-radius: 6;
+    border-radius: 6px;
 }
 
 .login-button {
     -fx-font-size: 14px;
+    font-size: 14px;
     -fx-background-color: #3b6cb7;
+    background-color: #3b6cb7;
     -fx-text-fill: white;
+    color: white;
     -fx-background-radius: 8;
+    border-radius: 8px;
     -fx-padding: 10 16;
+    padding: 10 16;
 }
 
 .login-button:hover {
     -fx-background-color: #2e5a9a;
+    background-color: #2e5a9a;
 }
 
 .error-label {
     -fx-text-fill: #e74c3c;
+    color: #e74c3c;
     -fx-font-size: 12px;
+    font-size: 12px;
 }
 
 /* Admin Dashboard */
 .admin-header {
     -fx-background: linear-gradient(to right, #1a252f 0%, #2c3e50 50%, #34495e 100%);
+    background: linear-gradient(to right, #1a252f 0%, #2c3e50 50%, #34495e 100%);
     -fx-background-color: #1a252f;
+    background-color: #1a252f;
     -fx-padding: 15;
+    padding: 15;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 10, 0, 0, 4);
 }
 
 .admin-title {
     -fx-text-fill: white;
+    color: white;
     -fx-font-size: 20px;
+    font-size: 20px;
     -fx-font-weight: bold;
+    font-weight: bold;
 }
 
 .admin-menu {
     -fx-background: linear-gradient(to bottom, #2c3e50 0%, #34495e 100%);
+    background: linear-gradient(to bottom, #2c3e50 0%, #34495e 100%);
     -fx-background-color: #2c3e50;
+    background-color: #2c3e50;
     -fx-padding: 20;
+    padding: 20;
 }
 
 .admin-menu-title {
     -fx-text-fill: white;
+    color: white;
     -fx-font-size: 16px;
+    font-size: 16px;
     -fx-font-weight: bold;
+    font-weight: bold;
 }
 
 .primary-button {
     -fx-background-color: #3b6cb7;
+    background-color: #3b6cb7;
     -fx-text-fill: white;
+    color: white;
     -fx-font-weight: bold;
+    font-weight: bold;
     -fx-background-radius: 8;
+    border-radius: 8px;
     -fx-padding: 10 16;
+    padding: 10 16;
 }
 
 .primary-button:hover {
     -fx-background-color: #2a5a9a;
+    background-color: #2a5a9a;
 }
 
 .secondary-button {
     -fx-background-color: #95a5a6;
+    background-color: #95a5a6;
     -fx-text-fill: white;
+    color: white;
     -fx-font-weight: bold;
+    font-weight: bold;
     -fx-background-radius: 8;
+    border-radius: 8px;
     -fx-padding: 10 16;
+    padding: 10 16;
 }
 
 .secondary-button:hover {
     -fx-background-color: #7f8c8d;
+    background-color: #7f8c8d;
 }
 
 .success-button {
     -fx-background-color: #27ae60;
+    background-color: #27ae60;
     -fx-text-fill: white;
+    color: white;
     -fx-font-weight: bold;
+    font-weight: bold;
     -fx-background-radius: 8;
+    border-radius: 8px;
     -fx-padding: 10 16;
+    padding: 10 16;
 }
 
 .success-button:hover {
     -fx-background-color: #229954;
+    background-color: #229954;
 }
 
 .danger-button {
     -fx-background-color: #e74c3c;
+    background-color: #e74c3c;
     -fx-text-fill: white;
+    color: white;
     -fx-font-weight: bold;
+    font-weight: bold;
     -fx-background-radius: 8;
+    border-radius: 8px;
     -fx-padding: 10 16;
+    padding: 10 16;
 }
 
 .danger-button:hover {
     -fx-background-color: #c0392b;
+    background-color: #c0392b;
 }
 
 /* Card/Stat styles */
 .stat-card {
     -fx-padding: 20;
+    padding: 20;
     -fx-border-color: #e0e6ed;
+    border-color: #e0e6ed;
     -fx-border-width: 1;
+    border-width: 1;
     -fx-background: linear-gradient(to bottom, #ffffff 0%, #fafbfc 100%);
+    background: linear-gradient(to bottom, #ffffff 0%, #fafbfc 100%);
     -fx-background-color: white;
+    background-color: white;
     -fx-background-radius: 12;
     -fx-border-radius: 12;
+    border-radius: 12px;
     -fx-effect: dropshadow(gaussian, rgba(50, 50, 93, 0.15), 13, 0.7, 0, 4);
 }
 
 .stat-card:hover {
     -fx-effect: dropshadow(gaussian, rgba(50, 50, 93, 0.25), 20, 0.8, 0, 8);
     -fx-border-color: #3498db;
+    border-color: #3498db;
 }
 
 .stat-icon {
     -fx-padding: 15;
+    padding: 15;
     -fx-alignment: center;
 }
 
 .stat-title {
     -fx-font-size: 13px;
+    font-size: 13px;
     -fx-text-fill: #7f8c8d;
+    color: #7f8c8d;
     -fx-font-weight: bold;
+    font-weight: bold;
 }
 
 .stat-value {
     -fx-font-size: 32px;
+    font-size: 32px;
     -fx-font-weight: bold;
+    font-weight: bold;
     -fx-text-fill: #2c3e50;
+    color: #2c3e50;
 }
 
 /* View Titles */
 .view-title {
     -fx-font-size: 18px;
+    font-size: 18px;
     -fx-font-weight: bold;
+    font-weight: bold;
     -fx-text-fill: #2c3e50;
+    color: #2c3e50;
 }
 
 .section-title {
     -fx-font-size: 16px;
+    font-size: 16px;
     -fx-font-weight: bold;
+    font-weight: bold;
     -fx-text-fill: #2c3e50;
+    color: #2c3e50;
     -fx-padding: 0 0 10 0;
+    padding: 0 0 10 0;
 }
 
 /* Forms and inputs */
 .label-info {
     -fx-font-size: 12px;
+    font-size: 12px;
     -fx-text-fill: #34495e;
+    color: #34495e;
 }
 
 .text-field, .password-field, .combo-box, .text-area {
     -fx-padding: 8 10;
+    padding: 8 10;
     -fx-border-color: #c7d2df;
+    border-color: #c7d2df;
     -fx-border-width: 1;
+    border-width: 1;
     -fx-background-color: white;
+    background-color: white;
     -fx-background-radius: 6;
     -fx-border-radius: 6;
+    border-radius: 6px;
 }
 
 /* Info/Alert boxes */
 .info-box {
     -fx-padding: 12;
+    padding: 12;
     -fx-border-color: #3498db;
+    border-color: #3498db;
     -fx-border-width: 1;
+    border-width: 1;
     -fx-background-color: #ecf0f1;
+    background-color: #ecf0f1;
     -fx-background-radius: 8;
     -fx-border-radius: 8;
+    border-radius: 8px;
 }
 
 .success-box {
     -fx-padding: 12;
+    padding: 12;
     -fx-border-color: #27ae60;
+    border-color: #27ae60;
     -fx-border-width: 2;
+    border-width: 2;
     -fx-background-color: #ecf0f1;
+    background-color: #ecf0f1;
     -fx-background-radius: 8;
     -fx-border-radius: 8;
+    border-radius: 8px;
 }
 
 .warning-box {
     -fx-padding: 12;
+    padding: 12;
     -fx-border-color: #f39c12;
+    border-color: #f39c12;
     -fx-border-width: 1;
+    border-width: 1;
     -fx-background-color: #ecf0f1;
+    background-color: #ecf0f1;
     -fx-background-radius: 8;
     -fx-border-radius: 8;
+    border-radius: 8px;
 }
 
 .warning-text {
     -fx-text-fill: #d68910;
+    color: #d68910;
     -fx-font-size: 12px;
+    font-size: 12px;
 }

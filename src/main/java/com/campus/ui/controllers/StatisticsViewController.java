@@ -16,14 +16,12 @@ public class StatisticsViewController {
     private GestionBatiment gestionBatiment;
     private GestionChambre gestionChambre;
     private GestionEtudiant gestionEtudiant;
-    private Stage primaryStage;
 
     public StatisticsViewController(GestionBatiment gestionBatiment, GestionChambre gestionChambre,
-                                  GestionEtudiant gestionEtudiant, Stage primaryStage) {
+            GestionEtudiant gestionEtudiant) {
         this.gestionBatiment = gestionBatiment;
         this.gestionChambre = gestionChambre;
         this.gestionEtudiant = gestionEtudiant;
-        this.primaryStage = primaryStage;
     }
 
     public void show() {
@@ -54,22 +52,22 @@ public class StatisticsViewController {
         grid.setStyle("-fx-padding: 10;");
 
         // Stats cards
-        addStatCard(grid, 0, 0, "Nombre Total de Bâtiments", 
-                   String.valueOf(gestionBatiment.getAllBatiments().size()));
-        addStatCard(grid, 1, 0, "Nombre Total de Chambres", 
-                   String.valueOf(gestionChambre.getAllChambres().size()));
-        addStatCard(grid, 0, 1, "Chambres Libres", 
-                   String.valueOf(gestionChambre.getNombreChambresLibres()));
-        addStatCard(grid, 1, 1, "Chambres Occupées", 
-                   String.valueOf(gestionChambre.getNombreChambresOccupees()));
-        addStatCard(grid, 0, 2, "Nombre Total d'Étudiants", 
-                   String.valueOf(gestionEtudiant.getNombreTotalEtudiants()));
-        addStatCard(grid, 1, 2, "Étudiants Logés", 
-                   String.valueOf(gestionEtudiant.getNombreEtudiantsLogis()));
+        addStatCard(grid, 0, 0, "Nombre Total de Bâtiments",
+                String.valueOf(gestionBatiment.getAllBatiments().size()));
+        addStatCard(grid, 1, 0, "Nombre Total de Chambres",
+                String.valueOf(gestionChambre.getAllChambres().size()));
+        addStatCard(grid, 0, 1, "Chambres Libres",
+                String.valueOf(gestionChambre.getNombreChambresLibres()));
+        addStatCard(grid, 1, 1, "Chambres Occupées",
+                String.valueOf(gestionChambre.getNombreChambresOccupees()));
+        addStatCard(grid, 0, 2, "Nombre Total d'Étudiants",
+                String.valueOf(gestionEtudiant.getNombreTotalEtudiants()));
+        addStatCard(grid, 1, 2, "Étudiants Logés",
+                String.valueOf(gestionEtudiant.getNombreEtudiantsLogis()));
 
         double tauxOccupation = calculateOccupancyRate();
-        addStatCard(grid, 0, 3, "Taux d'Occupation", 
-                   String.format("%.1f%%", tauxOccupation));
+        addStatCard(grid, 0, 3, "Taux d'Occupation",
+                String.format("%.1f%%", tauxOccupation));
 
         return grid;
     }
@@ -77,7 +75,7 @@ public class StatisticsViewController {
     private void addStatCard(GridPane grid, int col, int row, String title, String value) {
         VBox card = new VBox(10);
         card.setStyle("-fx-padding: 15; -fx-border-color: #cccccc; -fx-border-width: 1; " +
-                     "-fx-background-color: #f5f5f5;");
+                "-fx-background-color: #f5f5f5;");
         card.setAlignment(Pos.CENTER);
         card.setPrefWidth(200);
         card.setPrefHeight(100);
@@ -114,7 +112,8 @@ public class StatisticsViewController {
 
     private double calculateOccupancyRate() {
         int total = gestionChambre.getAllChambres().size();
-        if (total == 0) return 0;
+        if (total == 0)
+            return 0;
         int occupied = gestionChambre.getNombreChambresOccupees();
         return (double) occupied / total * 100;
     }

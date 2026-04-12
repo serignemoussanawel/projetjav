@@ -14,15 +14,10 @@ public class ChambreViewController {
     private GestionBatiment gestionBatiment;
     private GestionChambre gestionChambre;
     private TableView<Chambre> tableView;
-    private Stage primaryStage;
-    private AdminDashboardController parentController;
 
-    public ChambreViewController(GestionBatiment gestionBatiment, GestionChambre gestionChambre,
-                               Stage primaryStage, AdminDashboardController parentController) {
+    public ChambreViewController(GestionBatiment gestionBatiment, GestionChambre gestionChambre) {
         this.gestionBatiment = gestionBatiment;
         this.gestionChambre = gestionChambre;
-        this.primaryStage = primaryStage;
-        this.parentController = parentController;
     }
 
     public void show() {
@@ -108,7 +103,12 @@ public class ChambreViewController {
         TableColumn<Chambre, String> etatCol = new TableColumn<>("État");
         etatCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().getEtat()));
 
-        tableView.getColumns().addAll(codeCol, numeroCol, batimentCol, etageCol, typeCol, etatCol);
+        tableView.getColumns().add(codeCol);
+        tableView.getColumns().add(numeroCol);
+        tableView.getColumns().add(batimentCol);
+        tableView.getColumns().add(etageCol);
+        tableView.getColumns().add(typeCol);
+        tableView.getColumns().add(etatCol);
         tableView.setPrefHeight(450);
     }
 

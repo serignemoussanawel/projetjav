@@ -14,26 +14,28 @@ public class GestionEtudiant {
     }
 
     private void initialiserDonnees() {
-        Etudiant e1 = new Etudiant("E1", "Dupont", "Jean", "jean.dupont@univ.fr", "MAT001", "Informatique");
+        Etudiant e1 = creerEtudiant("Dupont", "Jean", "jean.dupont@univ.fr", "MAT001", "Informatique");
         e1.setChambreId("C1");
         e1.setDateAffectation(LocalDate.now().minusDays(30).toString());
-        addEtudiant(e1);
 
-        Etudiant e2 = new Etudiant("E2", "Martin", "Marie", "marie.martin@univ.fr", "MAT002", "Mathématiques");
+        Etudiant e2 = creerEtudiant("Martin", "Marie", "marie.martin@univ.fr", "MAT002", "Mathématiques");
         e2.setChambreId("C2");
         e2.setDateAffectation(LocalDate.now().minusDays(20).toString());
-        addEtudiant(e2);
 
-        Etudiant e3 = new Etudiant("E3", "Bernard", "Pierre", "pierre.bernard@univ.fr", "MAT003", "Physique");
-        addEtudiant(e3);
+        creerEtudiant("Bernard", "Pierre", "pierre.bernard@univ.fr", "MAT003", "Physique");
 
-        Etudiant e4 = new Etudiant("E4", "Thomas", "Sophie", "sophie.thomas@univ.fr", "MAT004", "Chimie");
+        Etudiant e4 = creerEtudiant("Thomas", "Sophie", "sophie.thomas@univ.fr", "MAT004", "Chimie");
         e4.setChambreId("C6");
         e4.setDateAffectation(LocalDate.now().minusDays(15).toString());
-        addEtudiant(e4);
 
-        Etudiant e5 = new Etudiant("E5", "Garcia", "Carlos", "carlos.garcia@univ.fr", "MAT005", "Informatique");
-        addEtudiant(e5);
+        creerEtudiant("Garcia", "Carlos", "carlos.garcia@univ.fr", "MAT005", "Informatique");
+    }
+
+    public Etudiant creerEtudiant(String nom, String prenom, String email, String numeroMatricule, String specialite) {
+        String id = "E" + nextId++;
+        Etudiant etudiant = new Etudiant(id, nom, prenom, email, numeroMatricule, specialite);
+        addEtudiant(etudiant);
+        return etudiant;
     }
 
     public void addEtudiant(Etudiant etudiant) {
@@ -46,9 +48,9 @@ public class GestionEtudiant {
 
     public Etudiant getEtudiantByMatricule(String matricule) {
         return etudiants.values().stream()
-            .filter(e -> e.getNumeroMatricule().equals(matricule))
-            .findFirst()
-            .orElse(null);
+                .filter(e -> e.getNumeroMatricule().equals(matricule))
+                .findFirst()
+                .orElse(null);
     }
 
     public void updateEtudiant(Etudiant etudiant) {
@@ -65,20 +67,20 @@ public class GestionEtudiant {
 
     public List<Etudiant> getEtudiantsActifs() {
         return etudiants.values().stream()
-            .filter(Etudiant::isActif)
-            .toList();
+                .filter(Etudiant::isActif)
+                .toList();
     }
 
     public List<Etudiant> getEtudiantsAvecChambre() {
         return etudiants.values().stream()
-            .filter(Etudiant::hasRoom)
-            .toList();
+                .filter(Etudiant::hasRoom)
+                .toList();
     }
 
     public List<Etudiant> getEtudiantsSansChambre() {
         return etudiants.values().stream()
-            .filter(e -> !e.hasRoom())
-            .toList();
+                .filter(e -> !e.hasRoom())
+                .toList();
     }
 
     public boolean affecterChambre(String etudiantId, String chambreId, String dateAffectation) {

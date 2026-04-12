@@ -4,7 +4,6 @@ import com.campus.managers.*;
 import com.campus.models.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
@@ -13,17 +12,10 @@ import javafx.stage.Stage;
 
 public class BatimentViewController {
     private GestionBatiment gestionBatiment;
-    private GestionChambre gestionChambre;
     private TableView<Batiment> tableView;
-    private Stage primaryStage;
-    private AdminDashboardController parentController;
 
-    public BatimentViewController(GestionBatiment gestionBatiment, GestionChambre gestionChambre,
-                                Stage primaryStage, AdminDashboardController parentController) {
+    public BatimentViewController(GestionBatiment gestionBatiment) {
         this.gestionBatiment = gestionBatiment;
-        this.gestionChambre = gestionChambre;
-        this.primaryStage = primaryStage;
-        this.parentController = parentController;
     }
 
     public void show() {
@@ -65,18 +57,25 @@ public class BatimentViewController {
     private void setupTable() {
         tableView.getStyleClass().add("dashboard-table");
         TableColumn<Batiment, String> idCol = new TableColumn<>("ID");
-        idCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().getId()));
+        idCol.setCellValueFactory(
+                cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().getId()));
 
         TableColumn<Batiment, String> nomCol = new TableColumn<>("Nom");
-        nomCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().getNom()));
+        nomCol.setCellValueFactory(
+                cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().getNom()));
 
         TableColumn<Batiment, String> adresseCol = new TableColumn<>("Adresse");
-        adresseCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().getAdresse()));
+        adresseCol.setCellValueFactory(
+                cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().getAdresse()));
 
         TableColumn<Batiment, Integer> etagesCol = new TableColumn<>("Étages");
-        etagesCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleObjectProperty<>(cellData.getValue().getEtages()));
+        etagesCol.setCellValueFactory(
+                cellData -> new javafx.beans.property.SimpleObjectProperty<>(cellData.getValue().getEtages()));
 
-        tableView.getColumns().addAll(idCol, nomCol, adresseCol, etagesCol);
+        tableView.getColumns().add(idCol);
+        tableView.getColumns().add(nomCol);
+        tableView.getColumns().add(adresseCol);
+        tableView.getColumns().add(etagesCol);
         tableView.setPrefHeight(400);
     }
 
@@ -107,8 +106,8 @@ public class BatimentViewController {
         Button saveBtn = new Button("Enregistrer");
         saveBtn.setOnAction(e -> {
             if (validateInput(idField, nomField, adresseField)) {
-                Batiment b = new Batiment(idField.getText(), nomField.getText(), 
-                                         adresseField.getText(), etagsSpinner.getValue());
+                Batiment b = new Batiment(idField.getText(), nomField.getText(),
+                        adresseField.getText(), etagsSpinner.getValue());
                 gestionBatiment.addBatiment(b);
                 refreshTable();
                 dialog.close();
@@ -116,12 +115,11 @@ public class BatimentViewController {
         });
 
         content.getChildren().addAll(
-            new Label("ID:"), idField,
-            new Label("Nom:"), nomField,
-            new Label("Adresse:"), adresseField,
-            new Label("Nombre d'étages:"), etagsSpinner,
-            saveBtn
-        );
+                new Label("ID:"), idField,
+                new Label("Nom:"), nomField,
+                new Label("Adresse:"), adresseField,
+                new Label("Nombre d'étages:"), etagsSpinner,
+                saveBtn);
 
         dialog.setScene(new Scene(content, 400, 350));
         dialog.show();
@@ -155,11 +153,10 @@ public class BatimentViewController {
         });
 
         content.getChildren().addAll(
-            new Label("Nom:"), nomField,
-            new Label("Adresse:"), adresseField,
-            new Label("Nombre d'étages:"), etagsSpinner,
-            saveBtn
-        );
+                new Label("Nom:"), nomField,
+                new Label("Adresse:"), adresseField,
+                new Label("Nombre d'étages:"), etagsSpinner,
+                saveBtn);
 
         dialog.setScene(new Scene(content, 400, 300));
         dialog.show();
