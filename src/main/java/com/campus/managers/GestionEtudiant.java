@@ -1,34 +1,24 @@
 package com.campus.managers;
 
-import com.campus.models.*;
-import java.time.LocalDate;
-import java.util.*;
+import com.campus.database.DatabaseManager;
+import com.campus.models.Etudiant;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 public class GestionEtudiant {
-    private Map<String, Etudiant> etudiants;
+    private final Map<String, Etudiant> etudiants;
     private int nextId = 1;
 
     public GestionEtudiant() {
         this.etudiants = new LinkedHashMap<>();
-        initialiserDonnees();
-    }
-
-    private void initialiserDonnees() {
-        Etudiant e1 = creerEtudiant("Dupont", "Jean", "jean.dupont@univ.fr", "MAT001", "Informatique");
-        e1.setChambreId("C1");
-        e1.setDateAffectation(LocalDate.now().minusDays(30).toString());
-
-        Etudiant e2 = creerEtudiant("Martin", "Marie", "marie.martin@univ.fr", "MAT002", "Mathématiques");
-        e2.setChambreId("C2");
-        e2.setDateAffectation(LocalDate.now().minusDays(20).toString());
-
-        creerEtudiant("Bernard", "Pierre", "pierre.bernard@univ.fr", "MAT003", "Physique");
-
-        Etudiant e4 = creerEtudiant("Thomas", "Sophie", "sophie.thomas@univ.fr", "MAT004", "Chimie");
-        e4.setChambreId("C6");
-        e4.setDateAffectation(LocalDate.now().minusDays(15).toString());
-
-        creerEtudiant("Garcia", "Carlos", "carlos.garcia@univ.fr", "MAT005", "Informatique");
+        chargerDepuisLaBase();
     }
 
     public Etudiant creerEtudiant(String nom, String prenom, String email, String numeroMatricule, String specialite) {
@@ -39,7 +29,19 @@ public class GestionEtudiant {
     }
 
     public void addEtudiant(Etudiant etudiant) {
-        etudiants.put(etudiant.getId(), etudiant);
+        String sql = """
+                INSERT INTO etudiants (id, nom, prenom, email, numero_matricule, specialite, chambre_id, date_affectation, actif)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """;
+
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            DatabaseManager.bindEtudiant(statement, etudiant);
+            statement.executeUpdate();
+            etudiants.put(etudiant.getId(), etudiant);
+        } catch (SQLException e) {
+            throw new IllegalStateException("Impossible d'ajouter l'etudiant dans la base de donnees.", e);
+        }
     }
 
     public Etudiant getEtudiant(String id) {
@@ -54,11 +56,41 @@ public class GestionEtudiant {
     }
 
     public void updateEtudiant(Etudiant etudiant) {
-        etudiants.put(etudiant.getId(), etudiant);
+        String sql = """
+                UPDATE etudiants
+                SET nom = ?, prenom = ?, email = ?, numero_matricule = ?, specialite = ?, chambre_id = ?, date_affectation = ?, actif = ?
+                WHERE id = ?
+                """;
+
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, etudiant.getNom());
+            statement.setString(2, etudiant.getPrenom());
+            statement.setString(3, etudiant.getEmail());
+            statement.setString(4, etudiant.getNumeroMatricule());
+            statement.setString(5, etudiant.getSpecialite());
+            statement.setString(6, etudiant.getChambreId());
+            statement.setString(7, etudiant.getDateAffectation());
+            statement.setBoolean(8, etudiant.isActif());
+            statement.setString(9, etudiant.getId());
+            statement.executeUpdate();
+            etudiants.put(etudiant.getId(), etudiant);
+        } catch (SQLException e) {
+            throw new IllegalStateException("Impossible de mettre a jour l'etudiant dans la base de donnees.", e);
+        }
     }
 
     public void deleteEtudiant(String id) {
-        etudiants.remove(id);
+        String sql = "DELETE FROM etudiants WHERE id = ?";
+
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, id);
+            statement.executeUpdate();
+            etudiants.remove(id);
+        } catch (SQLException e) {
+            throw new IllegalStateException("Impossible de supprimer l'etudiant de la base de donnees.", e);
+        }
     }
 
     public List<Etudiant> getAllEtudiants() {
@@ -111,5 +143,43 @@ public class GestionEtudiant {
 
     public int getNombreEtudiantsLogis() {
         return (int) etudiants.values().stream().filter(Etudiant::hasRoom).count();
+    }
+
+    private void chargerDepuisLaBase() {
+        etudiants.clear();
+
+        String sql = """
+                SELECT id, nom, prenom, email, numero_matricule, specialite, chambre_id, date_affectation, actif
+                FROM etudiants
+                ORDER BY prenom, nom
+                """;
+
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()) {
+
+            while (resultSet.next()) {
+                Etudiant etudiant = new Etudiant(
+                        resultSet.getString("id"),
+                        resultSet.getString("nom"),
+                        resultSet.getString("prenom"),
+                        resultSet.getString("email"),
+                        resultSet.getString("numero_matricule"),
+                        resultSet.getString("specialite"));
+                etudiant.setChambreId(resultSet.getString("chambre_id"));
+                etudiant.setDateAffectation(resultSet.getString("date_affectation"));
+                etudiant.setActif(resultSet.getBoolean("actif"));
+                etudiants.put(etudiant.getId(), etudiant);
+            }
+
+            nextId = etudiants.keySet().stream()
+                    .map(id -> id.replaceAll("\\D+", ""))
+                    .filter(value -> !value.isBlank())
+                    .mapToInt(Integer::parseInt)
+                    .max()
+                    .orElse(0) + 1;
+        } catch (SQLException e) {
+            throw new IllegalStateException("Impossible de charger les etudiants depuis la base de donnees.", e);
+        }
     }
 }

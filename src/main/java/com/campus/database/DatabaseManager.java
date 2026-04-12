@@ -2,6 +2,7 @@ package com.campus.database;
 
 import com.campus.models.Batiment;
 import com.campus.models.Chambre;
+import com.campus.models.Etudiant;
 import com.campus.models.UserRole;
 import com.campus.models.Utilisateur;
 
@@ -43,9 +44,8 @@ public final class DatabaseManager {
         createUtilisateursTable();
         createBatimentsTable();
         createChambresTable();
-        seedDefaultUsersIfNeeded();
-        seedDefaultBatimentsIfNeeded();
-        seedDefaultChambresIfNeeded();
+        createEtudiantsTable();
+        synchronizeEtudiantsFromUtilisateurs();
     }
 
     private static void createUtilisateursTable() throws SQLException {
@@ -106,115 +106,70 @@ public final class DatabaseManager {
         }
     }
 
-    private static void seedDefaultUsersIfNeeded() throws SQLException {
-        String countSql = "SELECT COUNT(*) FROM utilisateurs";
-
-        try (Connection connection = getConnection();
-             Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(countSql)) {
-
-            if (resultSet.next() && resultSet.getInt(1) > 0) {
-                return;
-            }
-        }
-
-        List<Utilisateur> defaults = new ArrayList<>();
-
-        Utilisateur admin = new Utilisateur("U1", "Admin", "System", "admin@univ.fr", "admin123", UserRole.ADMIN);
-        defaults.add(admin);
-
-        Utilisateur admin2 = new Utilisateur("U6", "Admin1", "Michel", "admin1@univ.fr", "admin123", UserRole.ADMIN);
-        defaults.add(admin2);
-
-        Utilisateur chef1 = new Utilisateur("U2", "Durand", "Michel", "chef1@univ.fr", "chef123", UserRole.CHEF_BATIMENT);
-        chef1.setBatimentId("B1");
-        defaults.add(chef1);
-
-        Utilisateur chef2 = new Utilisateur("U3", "Leclerc", "Francoise", "chef2@univ.fr", "chef123", UserRole.CHEF_BATIMENT);
-        chef2.setBatimentId("B2");
-        defaults.add(chef2);
-
-        Utilisateur etudiant1 = new Utilisateur("U4", "Dupont", "Jean", "jean@univ.fr", "etud123", UserRole.ETUDIANT);
-        defaults.add(etudiant1);
-
-        Utilisateur etudiant2 = new Utilisateur("U5", "Martin", "Marie", "marie@univ.fr", "etud123", UserRole.ETUDIANT);
-        defaults.add(etudiant2);
-
-        String insertSql = """
-                INSERT INTO utilisateurs (id, nom, prenom, email, mot_de_passe, role, batiment_id, actif)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    private static void createEtudiantsTable() throws SQLException {
+        String sql = """
+                CREATE TABLE IF NOT EXISTS etudiants (
+                    id VARCHAR(50) PRIMARY KEY,
+                    nom VARCHAR(100) NOT NULL,
+                    prenom VARCHAR(100) NOT NULL,
+                    email VARCHAR(150) NOT NULL UNIQUE,
+                    numero_matricule VARCHAR(100) NOT NULL UNIQUE,
+                    specialite VARCHAR(150) NOT NULL,
+                    chambre_id VARCHAR(50) NULL,
+                    date_affectation VARCHAR(50) NULL,
+                    actif BOOLEAN NOT NULL DEFAULT TRUE
+                )
                 """;
 
         try (Connection connection = getConnection();
-             PreparedStatement statement = connection.prepareStatement(insertSql)) {
-            for (Utilisateur utilisateur : defaults) {
-                bindUtilisateur(statement, utilisateur);
-                statement.addBatch();
-            }
-            statement.executeBatch();
+             Statement statement = connection.createStatement()) {
+            statement.execute(sql);
         }
     }
 
-    private static void seedDefaultBatimentsIfNeeded() throws SQLException {
-        if (tableHasData("batiments")) {
-            return;
-        }
-
-        List<Batiment> defaults = new ArrayList<>();
-
-        Batiment batiment1 = new Batiment("B1", "Bâtiment A", "123 Rue de l'Université", 4);
-        batiment1.setDescription("Résidence principale du campus");
-        defaults.add(batiment1);
-
-        Batiment batiment2 = new Batiment("B2", "Bâtiment B", "124 Rue de l'Université", 5);
-        batiment2.setDescription("Résidence mixte");
-        defaults.add(batiment2);
-
-        Batiment batiment3 = new Batiment("B3", "Bâtiment C", "125 Rue de l'Université", 3);
-        batiment3.setDescription("Résidence étudiants");
-        defaults.add(batiment3);
-
-        String insertSql = """
-                INSERT INTO batiments (id, nom, adresse, etages, description)
-                VALUES (?, ?, ?, ?, ?)
+    private static void synchronizeEtudiantsFromUtilisateurs() throws SQLException {
+        String sql = """
+                SELECT u.id, u.nom, u.prenom, u.email, u.actif
+                FROM utilisateurs u
+                LEFT JOIN etudiants e ON e.email = u.email
+                WHERE u.role = ? AND e.id IS NULL
                 """;
 
-        try (Connection connection = getConnection();
-             PreparedStatement statement = connection.prepareStatement(insertSql)) {
-            for (Batiment batiment : defaults) {
-                bindBatiment(statement, batiment);
-                statement.addBatch();
-            }
-            statement.executeBatch();
-        }
-    }
+        List<Etudiant> missingEtudiants = new ArrayList<>();
 
-    private static void seedDefaultChambresIfNeeded() throws SQLException {
-        if (tableHasData("chambres")) {
+        try (Connection connection = getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, UserRole.ETUDIANT.name());
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    String userId = resultSet.getString("id");
+                    Etudiant etudiant = new Etudiant(
+                            "ETU_" + userId,
+                            resultSet.getString("nom"),
+                            resultSet.getString("prenom"),
+                            resultSet.getString("email"),
+                            "AUTO-" + userId,
+                            "Non renseignée");
+                    etudiant.setActif(resultSet.getBoolean("actif"));
+                    missingEtudiants.add(etudiant);
+                }
+            }
+        }
+
+        if (missingEtudiants.isEmpty()) {
             return;
         }
 
-        List<Chambre> defaults = new ArrayList<>();
-        defaults.add(createChambre("C1", "B1-101", 1, "B1", 1, 2, "Double"));
-        defaults.add(createChambre("C2", "B1-102", 2, "B1", 1, 1, "Simple"));
-        defaults.add(createChambre("C3", "B1-201", 1, "B1", 2, 3, "Suite"));
-        defaults.add(createChambre("C4", "B1-202", 2, "B1", 2, 2, "Double"));
-        defaults.add(createChambre("C5", "B1-301", 1, "B1", 3, 1, "Simple"));
-        defaults.add(createChambre("C6", "B2-101", 1, "B2", 1, 2, "Double"));
-        defaults.add(createChambre("C7", "B2-102", 2, "B2", 1, 1, "Simple"));
-        defaults.add(createChambre("C8", "B2-201", 1, "B2", 2, 3, "Suite"));
-        defaults.add(createChambre("C9", "B3-101", 1, "B3", 1, 2, "Double"));
-        defaults.add(createChambre("C10", "B3-102", 2, "B3", 1, 1, "Simple"));
-
         String insertSql = """
-                INSERT INTO chambres (id, code, numero, batiment_id, etage, capacite, etat, etudiant_id, type)
+                INSERT INTO etudiants (id, nom, prenom, email, numero_matricule, specialite, chambre_id, date_affectation, actif)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
 
         try (Connection connection = getConnection();
              PreparedStatement statement = connection.prepareStatement(insertSql)) {
-            for (Chambre chambre : defaults) {
-                bindChambre(statement, chambre);
+            for (Etudiant etudiant : missingEtudiants) {
+                bindEtudiant(statement, etudiant);
                 statement.addBatch();
             }
             statement.executeBatch();
@@ -252,25 +207,16 @@ public final class DatabaseManager {
         statement.setString(9, chambre.getType());
     }
 
-    private static boolean tableHasData(String tableName) throws SQLException {
-        String sql = "SELECT COUNT(*) FROM " + tableName;
-
-        try (Connection connection = getConnection();
-             Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(sql)) {
-            return resultSet.next() && resultSet.getInt(1) > 0;
-        }
-    }
-
-    private static Chambre createChambre(
-            String id,
-            String code,
-            int numero,
-            String batimentId,
-            int etage,
-            int capacite,
-            String type) {
-        return new Chambre(id, code, numero, batimentId, etage, capacite, type);
+    public static void bindEtudiant(PreparedStatement statement, Etudiant etudiant) throws SQLException {
+        statement.setString(1, etudiant.getId());
+        statement.setString(2, etudiant.getNom());
+        statement.setString(3, etudiant.getPrenom());
+        statement.setString(4, etudiant.getEmail());
+        statement.setString(5, etudiant.getNumeroMatricule());
+        statement.setString(6, etudiant.getSpecialite());
+        statement.setString(7, etudiant.getChambreId());
+        statement.setString(8, etudiant.getDateAffectation());
+        statement.setBoolean(9, etudiant.isActif());
     }
 
     private static String getEnvOrDefault(String key, String defaultValue) {
