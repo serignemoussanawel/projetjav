@@ -1,18 +1,37 @@
 package com.campus.ui.controllers;
 
-import com.campus.managers.*;
-import com.campus.models.*;
+import com.campus.managers.GestionUtilisateur;
+import com.campus.models.UserRole;
+import com.campus.models.Utilisateur;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 public class UtilisateurViewController {
-    private GestionUtilisateur gestionUtilisateur;
+    private final GestionUtilisateur gestionUtilisateur;
     private TableView<Utilisateur> tableView;
+    private TextField idField;
+    private TextField nomField;
+    private TextField prenomField;
+    private TextField emailField;
+    private PasswordField passwordField;
+    private ComboBox<UserRole> roleCombo;
+    private Button saveButton;
+    private Utilisateur selectedUtilisateur;
 
     public UtilisateurViewController(GestionUtilisateur gestionUtilisateur) {
         this.gestionUtilisateur = gestionUtilisateur;
@@ -21,66 +40,199 @@ public class UtilisateurViewController {
     public void show() {
         Stage stage = new Stage();
         stage.setTitle("Gestion des Utilisateurs");
-        stage.setScene(new Scene(createLayout(), 1000, 600));
+        Scene scene = new Scene(createView(), 1200, 720);
+        scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
+        stage.setScene(scene);
         stage.show();
     }
 
-    private VBox createLayout() {
-        VBox root = new VBox(10);
-        root.getStyleClass().add("content-panel");
+    public HBox createView() {
+        HBox root = new HBox(18);
+        root.getStyleClass().add("split-view");
+
+        VBox listPanel = createListPanel();
+        VBox formPanel = createFormPanel();
+        HBox.setHgrow(listPanel, Priority.ALWAYS);
+
+        root.getChildren().addAll(listPanel, formPanel);
+        return root;
+    }
+
+    private VBox createListPanel() {
+        VBox panel = new VBox(16);
+        panel.getStyleClass().add("content-panel");
+        HBox.setHgrow(panel, Priority.ALWAYS);
 
         Label title = new Label("Gestion des Utilisateurs");
         title.getStyleClass().add("view-title");
 
-        HBox buttonBox = createButtonBox();
+        Label subtitle = new Label("Créez, modifiez ou activez les comptes depuis un seul écran.");
+        subtitle.getStyleClass().add("panel-subtitle");
+
+        HBox actions = new HBox(10);
+        actions.getStyleClass().add("toolbar-row");
+        Button newButton = new Button("Nouveau");
+        newButton.getStyleClass().add("primary-button");
+        newButton.setOnAction(e -> resetForm());
+        Button toggleButton = new Button("Activer/Désactiver");
+        toggleButton.getStyleClass().add("success-button");
+        toggleButton.setOnAction(e -> toggleActive());
+        Button deleteButton = new Button("Supprimer");
+        deleteButton.getStyleClass().add("danger-button");
+        deleteButton.setOnAction(e -> deleteSelectedUtilisateur());
+        actions.getChildren().addAll(newButton, toggleButton, deleteButton);
 
         tableView = new TableView<>();
+        tableView.getStyleClass().add("dashboard-table");
         setupTable();
         refreshTable();
+        VBox.setVgrow(tableView, Priority.ALWAYS);
 
-        root.getChildren().addAll(title, buttonBox, tableView);
-        return root;
+        panel.getChildren().addAll(title, subtitle, actions, tableView);
+        return panel;
     }
 
-    private HBox createButtonBox() {
-        HBox box = new HBox(10);
+    private VBox createFormPanel() {
+        VBox panel = new VBox(12);
+        panel.getStyleClass().addAll("content-panel", "editor-panel");
+        panel.setPrefWidth(360);
 
-        Button addBtn = new Button("Ajouter");
-        Button editBtn = new Button("Modifier");
-        Button deleteBtn = new Button("Supprimer");
-        Button toggleActiveBtn = new Button("Activer/Désactiver");
+        Label title = new Label("Formulaire utilisateur");
+        title.getStyleClass().add("dialog-title");
 
-        addBtn.setOnAction(e -> showAddDialog());
-        editBtn.setOnAction(e -> showEditDialog());
-        deleteBtn.setOnAction(e -> deleteUtilisateur());
-        toggleActiveBtn.setOnAction(e -> toggleActive());
+        Label subtitle = new Label("Le formulaire se remplit automatiquement lorsque vous sélectionnez une ligne.");
+        subtitle.getStyleClass().add("dialog-subtitle");
+        subtitle.setWrapText(true);
 
-        box.getChildren().addAll(addBtn, editBtn, toggleActiveBtn, deleteBtn);
-        return box;
+        idField = new TextField();
+        idField.setPromptText("ID");
+
+        nomField = new TextField();
+        nomField.setPromptText("Nom");
+
+        prenomField = new TextField();
+        prenomField.setPromptText("Prénom");
+
+        emailField = new TextField();
+        emailField.setPromptText("Email");
+
+        passwordField = new PasswordField();
+        passwordField.setPromptText("Mot de passe");
+
+        roleCombo = new ComboBox<>(FXCollections.observableArrayList(UserRole.values()));
+        roleCombo.setMaxWidth(Double.MAX_VALUE);
+
+        saveButton = new Button("Enregistrer");
+        saveButton.getStyleClass().add("primary-button");
+        saveButton.setMaxWidth(Double.MAX_VALUE);
+        saveButton.setOnAction(e -> saveUtilisateur());
+
+        Button resetButton = new Button("Réinitialiser");
+        resetButton.getStyleClass().add("secondary-button");
+        resetButton.setMaxWidth(Double.MAX_VALUE);
+        resetButton.setOnAction(e -> resetForm());
+
+        panel.getChildren().addAll(
+                title, subtitle,
+                new Label("Identifiant"), idField,
+                new Label("Nom"), nomField,
+                new Label("Prénom"), prenomField,
+                new Label("Email"), emailField,
+                new Label("Mot de passe"), passwordField,
+                new Label("Rôle"), roleCombo,
+                saveButton, resetButton);
+        return panel;
     }
 
     private void setupTable() {
-        TableColumn<Utilisateur, String> nomCol = new TableColumn<>("Nom");
-        nomCol.setCellValueFactory(
-                cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().getNomComplet()));
+        TableColumn<Utilisateur, String> nomCol = new TableColumn<>("Nom complet");
+        nomCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getNomComplet()));
 
         TableColumn<Utilisateur, String> emailCol = new TableColumn<>("Email");
-        emailCol.setCellValueFactory(
-                cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().getEmail()));
+        emailCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getEmail()));
 
         TableColumn<Utilisateur, String> roleCol = new TableColumn<>("Rôle");
-        roleCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(
-                cellData.getValue().getRole().getDisplayName()));
+        roleCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getRole().getDisplayName()));
 
         TableColumn<Utilisateur, String> actifCol = new TableColumn<>("Statut");
-        actifCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(
-                cellData.getValue().isActif() ? "Actif" : "Inactif"));
+        actifCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().isActif() ? "Actif" : "Inactif"));
 
-        tableView.getColumns().add(nomCol);
-        tableView.getColumns().add(emailCol);
-        tableView.getColumns().add(roleCol);
-        tableView.getColumns().add(actifCol);
-        tableView.setPrefHeight(400);
+        tableView.getColumns().setAll(nomCol, emailCol, roleCol, actifCol);
+        tableView.getSelectionModel().selectedItemProperty().addListener((obs, oldValue, newValue) -> populateForm(newValue));
+    }
+
+    private void populateForm(Utilisateur utilisateur) {
+        selectedUtilisateur = utilisateur;
+        if (utilisateur == null) {
+            return;
+        }
+        idField.setText(utilisateur.getId());
+        idField.setDisable(true);
+        nomField.setText(utilisateur.getNom());
+        prenomField.setText(utilisateur.getPrenom());
+        emailField.setText(utilisateur.getEmail());
+        passwordField.setText(utilisateur.getMotDePasse());
+        roleCombo.setValue(utilisateur.getRole());
+        saveButton.setText("Mettre à jour");
+    }
+
+    private void saveUtilisateur() {
+        if (idField.getText().isBlank() || nomField.getText().isBlank() || prenomField.getText().isBlank()
+                || emailField.getText().isBlank() || passwordField.getText().isBlank() || roleCombo.getValue() == null) {
+            showAlert("Erreur", "Veuillez remplir tous les champs.");
+            return;
+        }
+
+        if (selectedUtilisateur == null) {
+            Utilisateur utilisateur = new Utilisateur(
+                    idField.getText().trim(),
+                    nomField.getText().trim(),
+                    prenomField.getText().trim(),
+                    emailField.getText().trim(),
+                    passwordField.getText(),
+                    roleCombo.getValue());
+            gestionUtilisateur.addUtilisateur(utilisateur);
+        } else {
+            selectedUtilisateur.setNom(nomField.getText().trim());
+            selectedUtilisateur.setPrenom(prenomField.getText().trim());
+            selectedUtilisateur.setEmail(emailField.getText().trim());
+            selectedUtilisateur.setMotDePasse(passwordField.getText());
+            selectedUtilisateur.setRole(roleCombo.getValue());
+            gestionUtilisateur.updateUtilisateur(selectedUtilisateur);
+        }
+
+        refreshTable();
+        resetForm();
+    }
+
+    private void toggleActive() {
+        Utilisateur selected = tableView.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showAlert("Erreur", "Veuillez sélectionner un utilisateur.");
+            return;
+        }
+        selected.setActif(!selected.isActif());
+        gestionUtilisateur.updateUtilisateur(selected);
+        refreshTable();
+        populateForm(selected);
+    }
+
+    private void deleteSelectedUtilisateur() {
+        Utilisateur selected = tableView.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showAlert("Erreur", "Veuillez sélectionner un utilisateur.");
+            return;
+        }
+
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Confirmation");
+        confirm.setHeaderText("Supprimer l'utilisateur ?");
+        confirm.setContentText(selected.getNomComplet());
+        if (confirm.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
+            gestionUtilisateur.deleteUtilisateur(selected.getId());
+            refreshTable();
+            resetForm();
+        }
     }
 
     private void refreshTable() {
@@ -88,137 +240,19 @@ public class UtilisateurViewController {
         tableView.setItems(data);
     }
 
-    private void showAddDialog() {
-        Stage dialog = new Stage();
-        dialog.setTitle("Ajouter un Utilisateur");
-
-        VBox content = new VBox(10);
-        content.setStyle("-fx-padding: 15;");
-
-        TextField nomField = new TextField();
-        nomField.setPromptText("Nom");
-
-        TextField prenomField = new TextField();
-        prenomField.setPromptText("Prénom");
-
-        TextField emailField = new TextField();
-        emailField.setPromptText("Email");
-
-        PasswordField passwordField = new PasswordField();
-        passwordField.setPromptText("Mot de passe");
-
-        ComboBox<UserRole> roleCombo = new ComboBox<>();
-        roleCombo.setItems(FXCollections.observableArrayList(UserRole.values()));
-
-        Button saveBtn = new Button("Enregistrer");
-        saveBtn.setOnAction(e -> {
-            if (validateInput(nomField, prenomField, emailField, passwordField) && roleCombo.getValue() != null) {
-                Utilisateur u = new Utilisateur(
-                        "U" + System.currentTimeMillis(),
-                        nomField.getText(),
-                        prenomField.getText(),
-                        emailField.getText(),
-                        passwordField.getText(),
-                        roleCombo.getValue());
-                gestionUtilisateur.addUtilisateur(u);
-                refreshTable();
-                dialog.close();
-            }
-        });
-
-        content.getChildren().addAll(
-                new Label("Nom:"), nomField,
-                new Label("Prénom:"), prenomField,
-                new Label("Email:"), emailField,
-                new Label("Mot de passe:"), passwordField,
-                new Label("Rôle:"), roleCombo,
-                saveBtn);
-
-        dialog.setScene(new Scene(content, 400, 400));
-        dialog.show();
-    }
-
-    private void showEditDialog() {
-        Utilisateur selected = tableView.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            showAlert("Erreur", "Veuillez sélectionner un utilisateur");
-            return;
+    private void resetForm() {
+        selectedUtilisateur = null;
+        idField.clear();
+        idField.setDisable(false);
+        nomField.clear();
+        prenomField.clear();
+        emailField.clear();
+        passwordField.clear();
+        roleCombo.setValue(null);
+        saveButton.setText("Enregistrer");
+        if (tableView != null) {
+            tableView.getSelectionModel().clearSelection();
         }
-
-        Stage dialog = new Stage();
-        dialog.setTitle("Modifier un Utilisateur");
-
-        VBox content = new VBox(10);
-        content.setStyle("-fx-padding: 15;");
-
-        TextField nomField = new TextField(selected.getNom());
-        TextField prenomField = new TextField(selected.getPrenom());
-        TextField emailField = new TextField(selected.getEmail());
-
-        ComboBox<UserRole> roleCombo = new ComboBox<>();
-        roleCombo.setItems(FXCollections.observableArrayList(UserRole.values()));
-        roleCombo.setValue(selected.getRole());
-
-        Button saveBtn = new Button("Enregistrer");
-        saveBtn.setOnAction(e -> {
-            selected.setNom(nomField.getText());
-            selected.setPrenom(prenomField.getText());
-            selected.setEmail(emailField.getText());
-            selected.setRole(roleCombo.getValue());
-            gestionUtilisateur.updateUtilisateur(selected);
-            refreshTable();
-            dialog.close();
-        });
-
-        content.getChildren().addAll(
-                new Label("Nom:"), nomField,
-                new Label("Prénom:"), prenomField,
-                new Label("Email:"), emailField,
-                new Label("Rôle:"), roleCombo,
-                saveBtn);
-
-        dialog.setScene(new Scene(content, 400, 350));
-        dialog.show();
-    }
-
-    private void toggleActive() {
-        Utilisateur selected = tableView.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            showAlert("Erreur", "Veuillez sélectionner un utilisateur");
-            return;
-        }
-
-        selected.setActif(!selected.isActif());
-        gestionUtilisateur.updateUtilisateur(selected);
-        refreshTable();
-    }
-
-    private void deleteUtilisateur() {
-        Utilisateur selected = tableView.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            showAlert("Erreur", "Veuillez sélectionner un utilisateur");
-            return;
-        }
-
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle("Confirmation");
-        confirm.setHeaderText("Supprimer l'utilisateur?");
-        confirm.setContentText("Êtes-vous sûr de vouloir supprimer " + selected.getNomComplet() + "?");
-
-        if (confirm.showAndWait().get() == ButtonType.OK) {
-            gestionUtilisateur.deleteUtilisateur(selected.getId());
-            refreshTable();
-        }
-    }
-
-    private boolean validateInput(TextField... fields) {
-        for (TextField field : fields) {
-            if (field.getText().isEmpty()) {
-                showAlert("Erreur", "Veuillez remplir tous les champs");
-                return false;
-            }
-        }
-        return true;
     }
 
     private void showAlert(String title, String message) {

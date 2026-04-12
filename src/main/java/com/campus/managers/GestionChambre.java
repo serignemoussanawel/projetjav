@@ -1,35 +1,40 @@
 package com.campus.managers;
 
-import com.campus.models.*;
-import java.util.*;
+import com.campus.database.DatabaseManager;
+import com.campus.models.Chambre;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 public class GestionChambre {
-    private Map<String, Chambre> chambres;
+    private final Map<String, Chambre> chambres;
     private int nextId = 1;
 
     public GestionChambre() {
         this.chambres = new LinkedHashMap<>();
-        initialiserDonnees();
-    }
-
-    private void initialiserDonnees() {
-        // chambres B1
-        creerChambre("B1", 1, 2, "Double");
-        creerChambre("B1", 1, 1, "Simple");
-        creerChambre("B1", 2, 3, "Suite");
-        creerChambre("B1", 2, 2, "Double");
-        creerChambre("B1", 3, 1, "Simple");
-        // chambres B2
-        creerChambre("B2", 1, 2, "Double");
-        creerChambre("B2", 1, 1, "Simple");
-        creerChambre("B2", 2, 3, "Suite");
-        // chambres B3
-        creerChambre("B3", 1, 2, "Double");
-        creerChambre("B3", 1, 1, "Simple");
+        chargerDepuisLaBase();
     }
 
     public void addChambre(Chambre chambre) {
-        chambres.put(chambre.getId(), chambre);
+        String sql = """
+                INSERT INTO chambres (id, code, numero, batiment_id, etage, capacite, etat, etudiant_id, type)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """;
+
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            DatabaseManager.bindChambre(statement, chambre);
+            statement.executeUpdate();
+            chambres.put(chambre.getId(), chambre);
+        } catch (SQLException e) {
+            throw new IllegalStateException("Impossible d'ajouter la chambre dans la base de donnees.", e);
+        }
     }
 
     public Chambre getChambre(String id) {
@@ -44,11 +49,41 @@ public class GestionChambre {
     }
 
     public void updateChambre(Chambre chambre) {
-        chambres.put(chambre.getId(), chambre);
+        String sql = """
+                UPDATE chambres
+                SET code = ?, numero = ?, batiment_id = ?, etage = ?, capacite = ?, etat = ?, etudiant_id = ?, type = ?
+                WHERE id = ?
+                """;
+
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, chambre.getCode());
+            statement.setInt(2, chambre.getNumero());
+            statement.setString(3, chambre.getBatimentId());
+            statement.setInt(4, chambre.getEtage());
+            statement.setInt(5, chambre.getCapacite());
+            statement.setString(6, chambre.getEtat());
+            statement.setString(7, chambre.getEtudiantId());
+            statement.setString(8, chambre.getType());
+            statement.setString(9, chambre.getId());
+            statement.executeUpdate();
+            chambres.put(chambre.getId(), chambre);
+        } catch (SQLException e) {
+            throw new IllegalStateException("Impossible de mettre a jour la chambre dans la base de donnees.", e);
+        }
     }
 
     public void deleteChambre(String id) {
-        chambres.remove(id);
+        String sql = "DELETE FROM chambres WHERE id = ?";
+
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, id);
+            statement.executeUpdate();
+            chambres.remove(id);
+        } catch (SQLException e) {
+            throw new IllegalStateException("Impossible de supprimer la chambre de la base de donnees.", e);
+        }
     }
 
     public List<Chambre> getAllChambres() {
@@ -125,5 +160,42 @@ public class GestionChambre {
         return batimentId.toUpperCase() + "-"
                 + etage
                 + String.format("%02d", numero);
+    }
+
+    private void chargerDepuisLaBase() {
+        chambres.clear();
+
+        String sql = """
+                SELECT id, code, numero, batiment_id, etage, capacite, etat, etudiant_id, type
+                FROM chambres
+                ORDER BY batiment_id, etage, numero
+                """;
+
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()) {
+
+            while (resultSet.next()) {
+                Chambre chambre = new Chambre(
+                        resultSet.getString("id"),
+                        resultSet.getString("code"),
+                        resultSet.getInt("numero"),
+                        resultSet.getString("batiment_id"),
+                        resultSet.getInt("etage"),
+                        resultSet.getInt("capacite"),
+                        resultSet.getString("type"));
+                chambre.setEtat(resultSet.getString("etat"));
+                chambre.setEtudiantId(resultSet.getString("etudiant_id"));
+                chambres.put(chambre.getId(), chambre);
+            }
+            nextId = chambres.keySet().stream()
+                    .map(id -> id.replaceAll("\\D+", ""))
+                    .filter(value -> !value.isBlank())
+                    .mapToInt(Integer::parseInt)
+                    .max()
+                    .orElse(0) + 1;
+        } catch (SQLException e) {
+            throw new IllegalStateException("Impossible de charger les chambres depuis la base de donnees.", e);
+        }
     }
 }

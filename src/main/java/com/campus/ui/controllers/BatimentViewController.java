@@ -1,18 +1,36 @@
 package com.campus.ui.controllers;
 
-import com.campus.managers.*;
-import com.campus.models.*;
+import com.campus.managers.GestionBatiment;
+import com.campus.models.Batiment;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
+import javafx.scene.control.Spinner;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 public class BatimentViewController {
-    private GestionBatiment gestionBatiment;
+    private final GestionBatiment gestionBatiment;
     private TableView<Batiment> tableView;
+    private TextField idField;
+    private TextField nomField;
+    private TextField adresseField;
+    private Spinner<Integer> etagesSpinner;
+    private TextArea descriptionArea;
+    private Button saveButton;
+    private Batiment selectedBatiment;
 
     public BatimentViewController(GestionBatiment gestionBatiment) {
         this.gestionBatiment = gestionBatiment;
@@ -21,62 +39,173 @@ public class BatimentViewController {
     public void show() {
         Stage stage = new Stage();
         stage.setTitle("Gestion des Bâtiments");
-        stage.setScene(new Scene(createLayout(), 900, 600));
+        Scene scene = new Scene(createView(), 1180, 720);
+        scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
+        stage.setScene(scene);
         stage.show();
     }
 
-    private VBox createLayout() {
-        VBox root = new VBox(10);
-        root.getStyleClass().add("content-panel");
+    public HBox createView() {
+        HBox root = new HBox(18);
+        root.getStyleClass().add("split-view");
 
-        // Header
-        Label title = new Label("Gestion des Bâtiments");
-        title.getStyleClass().add("view-title");
+        VBox listPanel = createListPanel();
+        VBox formPanel = createFormPanel();
 
-        // Buttons
-        HBox buttonBox = new HBox(10);
-        Button addBtn = new Button("Ajouter");
-        Button editBtn = new Button("Modifier");
-        Button deleteBtn = new Button("Supprimer");
-
-        addBtn.setOnAction(e -> showAddDialog());
-        editBtn.setOnAction(e -> showEditDialog());
-        deleteBtn.setOnAction(e -> deleteBatiment());
-
-        buttonBox.getChildren().addAll(addBtn, editBtn, deleteBtn);
-
-        // Table
-        tableView = new TableView<>();
-        setupTable();
-        refreshTable();
-
-        root.getChildren().addAll(title, buttonBox, tableView);
+        HBox.setHgrow(listPanel, Priority.ALWAYS);
+        root.getChildren().addAll(listPanel, formPanel);
         return root;
     }
 
-    private void setupTable() {
+    private VBox createListPanel() {
+        VBox panel = new VBox(16);
+        panel.getStyleClass().add("content-panel");
+        HBox.setHgrow(panel, Priority.ALWAYS);
+
+        Label title = new Label("Gestion des Bâtiments");
+        title.getStyleClass().add("view-title");
+
+        Label subtitle = new Label("Consultez et mettez à jour les résidences sans quitter l'écran principal.");
+        subtitle.getStyleClass().add("panel-subtitle");
+
+        HBox actions = new HBox(10);
+        actions.getStyleClass().add("toolbar-row");
+        Button newButton = new Button("Nouveau");
+        newButton.getStyleClass().add("primary-button");
+        newButton.setOnAction(e -> resetForm());
+        Button deleteButton = new Button("Supprimer");
+        deleteButton.getStyleClass().add("danger-button");
+        deleteButton.setOnAction(e -> deleteSelectedBatiment());
+        actions.getChildren().addAll(newButton, deleteButton);
+
+        tableView = new TableView<>();
         tableView.getStyleClass().add("dashboard-table");
+        setupTable();
+        refreshTable();
+        VBox.setVgrow(tableView, Priority.ALWAYS);
+
+        panel.getChildren().addAll(title, subtitle, actions, tableView);
+        return panel;
+    }
+
+    private VBox createFormPanel() {
+        VBox panel = new VBox(12);
+        panel.getStyleClass().addAll("content-panel", "editor-panel");
+        panel.setPrefWidth(360);
+
+        Label title = new Label("Formulaire bâtiment");
+        title.getStyleClass().add("dialog-title");
+
+        Label subtitle = new Label("Sélectionnez un bâtiment dans la liste ou créez-en un nouveau.");
+        subtitle.getStyleClass().add("dialog-subtitle");
+        subtitle.setWrapText(true);
+
+        idField = new TextField();
+        idField.setPromptText("ID");
+
+        nomField = new TextField();
+        nomField.setPromptText("Nom");
+
+        adresseField = new TextField();
+        adresseField.setPromptText("Adresse");
+
+        etagesSpinner = new Spinner<>(1, 20, 1);
+
+        descriptionArea = new TextArea();
+        descriptionArea.setPromptText("Description");
+        descriptionArea.setPrefRowCount(5);
+
+        saveButton = new Button("Enregistrer");
+        saveButton.getStyleClass().add("primary-button");
+        saveButton.setMaxWidth(Double.MAX_VALUE);
+        saveButton.setOnAction(e -> saveBatiment());
+
+        Button cancelButton = new Button("Réinitialiser");
+        cancelButton.getStyleClass().add("secondary-button");
+        cancelButton.setMaxWidth(Double.MAX_VALUE);
+        cancelButton.setOnAction(e -> resetForm());
+
+        panel.getChildren().addAll(
+                title, subtitle,
+                new Label("Identifiant"), idField,
+                new Label("Nom"), nomField,
+                new Label("Adresse"), adresseField,
+                new Label("Nombre d'étages"), etagesSpinner,
+                new Label("Description"), descriptionArea,
+                saveButton, cancelButton);
+        return panel;
+    }
+
+    private void setupTable() {
         TableColumn<Batiment, String> idCol = new TableColumn<>("ID");
-        idCol.setCellValueFactory(
-                cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().getId()));
+        idCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getId()));
 
         TableColumn<Batiment, String> nomCol = new TableColumn<>("Nom");
-        nomCol.setCellValueFactory(
-                cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().getNom()));
+        nomCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getNom()));
 
         TableColumn<Batiment, String> adresseCol = new TableColumn<>("Adresse");
-        adresseCol.setCellValueFactory(
-                cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().getAdresse()));
+        adresseCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getAdresse()));
 
         TableColumn<Batiment, Integer> etagesCol = new TableColumn<>("Étages");
-        etagesCol.setCellValueFactory(
-                cellData -> new javafx.beans.property.SimpleObjectProperty<>(cellData.getValue().getEtages()));
+        etagesCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getEtages()));
 
-        tableView.getColumns().add(idCol);
-        tableView.getColumns().add(nomCol);
-        tableView.getColumns().add(adresseCol);
-        tableView.getColumns().add(etagesCol);
-        tableView.setPrefHeight(400);
+        tableView.getColumns().setAll(idCol, nomCol, adresseCol, etagesCol);
+        tableView.getSelectionModel().selectedItemProperty().addListener((obs, oldValue, newValue) -> populateForm(newValue));
+    }
+
+    private void populateForm(Batiment batiment) {
+        selectedBatiment = batiment;
+        if (batiment == null) {
+            return;
+        }
+        idField.setText(batiment.getId());
+        idField.setDisable(true);
+        nomField.setText(batiment.getNom());
+        adresseField.setText(batiment.getAdresse());
+        etagesSpinner.getValueFactory().setValue(batiment.getEtages());
+        descriptionArea.setText(batiment.getDescription());
+        saveButton.setText("Mettre à jour");
+    }
+
+    private void saveBatiment() {
+        if (idField.getText().isBlank() || nomField.getText().isBlank() || adresseField.getText().isBlank()) {
+            showAlert("Erreur", "Veuillez remplir tous les champs obligatoires.");
+            return;
+        }
+
+        if (selectedBatiment == null) {
+            Batiment batiment = new Batiment(idField.getText().trim(), nomField.getText().trim(),
+                    adresseField.getText().trim(), etagesSpinner.getValue());
+            batiment.setDescription(descriptionArea.getText().trim());
+            gestionBatiment.addBatiment(batiment);
+        } else {
+            selectedBatiment.setNom(nomField.getText().trim());
+            selectedBatiment.setAdresse(adresseField.getText().trim());
+            selectedBatiment.setEtages(etagesSpinner.getValue());
+            selectedBatiment.setDescription(descriptionArea.getText().trim());
+            gestionBatiment.updateBatiment(selectedBatiment);
+        }
+
+        refreshTable();
+        resetForm();
+    }
+
+    private void deleteSelectedBatiment() {
+        Batiment selected = tableView.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showAlert("Erreur", "Veuillez sélectionner un bâtiment.");
+            return;
+        }
+
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Confirmation");
+        confirm.setHeaderText("Supprimer le bâtiment ?");
+        confirm.setContentText(selected.getNom());
+        if (confirm.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
+            gestionBatiment.deleteBatiment(selected.getId());
+            refreshTable();
+            resetForm();
+        }
     }
 
     private void refreshTable() {
@@ -84,114 +213,22 @@ public class BatimentViewController {
         tableView.setItems(data);
     }
 
-    private void showAddDialog() {
-        Stage dialog = new Stage();
-        dialog.setTitle("Ajouter un Bâtiment");
-
-        VBox content = new VBox(10);
-        content.getStyleClass().add("content-panel");
-
-        TextField idField = new TextField();
-        idField.setPromptText("ID");
-
-        TextField nomField = new TextField();
-        nomField.setPromptText("Nom");
-
-        TextField adresseField = new TextField();
-        adresseField.setPromptText("Adresse");
-
-        Spinner<Integer> etagsSpinner = new Spinner<>(1, 10, 1);
-        etagsSpinner.setPrefWidth(150);
-
-        Button saveBtn = new Button("Enregistrer");
-        saveBtn.setOnAction(e -> {
-            if (validateInput(idField, nomField, adresseField)) {
-                Batiment b = new Batiment(idField.getText(), nomField.getText(),
-                        adresseField.getText(), etagsSpinner.getValue());
-                gestionBatiment.addBatiment(b);
-                refreshTable();
-                dialog.close();
-            }
-        });
-
-        content.getChildren().addAll(
-                new Label("ID:"), idField,
-                new Label("Nom:"), nomField,
-                new Label("Adresse:"), adresseField,
-                new Label("Nombre d'étages:"), etagsSpinner,
-                saveBtn);
-
-        dialog.setScene(new Scene(content, 400, 350));
-        dialog.show();
-    }
-
-    private void showEditDialog() {
-        Batiment selected = tableView.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            showAlert("Erreur", "Veuillez sélectionner un bâtiment");
-            return;
+    private void resetForm() {
+        selectedBatiment = null;
+        idField.clear();
+        idField.setDisable(false);
+        nomField.clear();
+        adresseField.clear();
+        etagesSpinner.getValueFactory().setValue(1);
+        descriptionArea.clear();
+        saveButton.setText("Enregistrer");
+        if (tableView != null) {
+            tableView.getSelectionModel().clearSelection();
         }
-
-        Stage dialog = new Stage();
-        dialog.setTitle("Modifier un Bâtiment");
-
-        VBox content = new VBox(10);
-        content.setStyle("-fx-padding: 15;");
-
-        TextField nomField = new TextField(selected.getNom());
-        TextField adresseField = new TextField(selected.getAdresse());
-        Spinner<Integer> etagsSpinner = new Spinner<>(1, 10, selected.getEtages());
-
-        Button saveBtn = new Button("Enregistrer");
-        saveBtn.setOnAction(e -> {
-            selected.setNom(nomField.getText());
-            selected.setAdresse(adresseField.getText());
-            selected.setEtages(etagsSpinner.getValue());
-            gestionBatiment.updateBatiment(selected);
-            refreshTable();
-            dialog.close();
-        });
-
-        content.getChildren().addAll(
-                new Label("Nom:"), nomField,
-                new Label("Adresse:"), adresseField,
-                new Label("Nombre d'étages:"), etagsSpinner,
-                saveBtn);
-
-        dialog.setScene(new Scene(content, 400, 300));
-        dialog.show();
-    }
-
-    private void deleteBatiment() {
-        Batiment selected = tableView.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            showAlert("Erreur", "Veuillez sélectionner un bâtiment");
-            return;
-        }
-
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle("Confirmation");
-        confirm.setHeaderText("Supprimer le bâtiment?");
-        confirm.setContentText("Êtes-vous sûr de vouloir supprimer " + selected.getNom() + "?");
-
-        if (confirm.showAndWait().get() == ButtonType.OK) {
-            gestionBatiment.deleteBatiment(selected.getId());
-            refreshTable();
-        }
-    }
-
-    private boolean validateInput(TextField... fields) {
-        for (TextField field : fields) {
-            if (field.getText().isEmpty()) {
-                showAlert("Erreur", "Veuillez remplir tous les champs");
-                return false;
-            }
-        }
-        return true;
     }
 
     private void showAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(message);

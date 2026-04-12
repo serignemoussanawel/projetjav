@@ -6,7 +6,7 @@
             "default": true
         }
     ],
-    "java.home": null,
+    
     "java.semanticHighlight.enabled": true,
     "java.saveActionOrganizeImports": true,
     "[java]": {

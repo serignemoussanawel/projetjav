@@ -1,19 +1,41 @@
 package com.campus.ui.controllers;
 
-import com.campus.managers.*;
-import com.campus.models.*;
+import com.campus.managers.GestionChambre;
+import com.campus.managers.GestionEtudiant;
+import com.campus.models.Chambre;
+import com.campus.models.Etudiant;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import java.time.LocalDate;
+
 public class EtudiantViewController {
-    private GestionEtudiant gestionEtudiant;
-    private GestionChambre gestionChambre;
+    private final GestionEtudiant gestionEtudiant;
+    private final GestionChambre gestionChambre;
     private TableView<Etudiant> tableView;
+    private TextField idField;
+    private TextField nomField;
+    private TextField prenomField;
+    private TextField emailField;
+    private TextField matriculeField;
+    private TextField specialiteField;
+    private ComboBox<Chambre> chambreCombo;
+    private Button saveButton;
+    private Etudiant selectedEtudiant;
 
     public EtudiantViewController(GestionEtudiant gestionEtudiant, GestionChambre gestionChambre) {
         this.gestionEtudiant = gestionEtudiant;
@@ -23,75 +45,223 @@ public class EtudiantViewController {
     public void show() {
         Stage stage = new Stage();
         stage.setTitle("Gestion des Étudiants");
-        stage.setScene(new Scene(createLayout(), 1000, 650));
+        Scene scene = new Scene(createView(), 1240, 720);
+        scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
+        stage.setScene(scene);
         stage.show();
     }
 
-    private VBox createLayout() {
-        VBox root = new VBox(10);
-        root.setStyle("-fx-padding: 15;");
+    public HBox createView() {
+        HBox root = new HBox(18);
+        root.getStyleClass().add("split-view");
 
-        Label title = new Label("Gestion des Étudiants");
-        title.setStyle("-fx-font-size: 16; -fx-font-weight: bold;");
+        VBox listPanel = createListPanel();
+        VBox formPanel = createFormPanel();
+        HBox.setHgrow(listPanel, Priority.ALWAYS);
 
-        HBox buttonBox = createButtonBox();
-
-        tableView = new TableView<>();
-        setupTable();
-        refreshTable();
-
-        root.getChildren().addAll(title, buttonBox, tableView);
+        root.getChildren().addAll(listPanel, formPanel);
         return root;
     }
 
-    private HBox createButtonBox() {
-        HBox box = new HBox(10);
+    private VBox createListPanel() {
+        VBox panel = new VBox(16);
+        panel.getStyleClass().add("content-panel");
+        HBox.setHgrow(panel, Priority.ALWAYS);
 
-        Button addBtn = new Button("Ajouter");
-        Button editBtn = new Button("Modifier");
-        Button affecterBtn = new Button("Affecter une Chambre");
-        Button libererBtn = new Button("Libérer la Chambre");
-        Button deleteBtn = new Button("Supprimer");
+        Label title = new Label("Gestion des Étudiants");
+        title.getStyleClass().add("view-title");
 
-        addBtn.setOnAction(e -> showAddDialog());
-        editBtn.setOnAction(e -> showEditDialog());
-        affecterBtn.setOnAction(e -> showAffecterDialog());
-        libererBtn.setOnAction(e -> libererChambre());
-        deleteBtn.setOnAction(e -> deleteEtudiant());
+        Label subtitle = new Label("Gérez les profils étudiants et leurs affectations sans ouvrir de popup.");
+        subtitle.getStyleClass().add("panel-subtitle");
 
-        box.getChildren().addAll(addBtn, editBtn, affecterBtn, libererBtn, deleteBtn);
-        return box;
+        HBox actions = new HBox(10);
+        actions.getStyleClass().add("toolbar-row");
+        Button newButton = new Button("Nouveau");
+        newButton.getStyleClass().add("primary-button");
+        newButton.setOnAction(e -> resetForm());
+        Button releaseButton = new Button("Libérer la chambre");
+        releaseButton.getStyleClass().add("secondary-button");
+        releaseButton.setOnAction(e -> libererChambre());
+        Button deleteButton = new Button("Supprimer");
+        deleteButton.getStyleClass().add("danger-button");
+        deleteButton.setOnAction(e -> deleteSelectedEtudiant());
+        actions.getChildren().addAll(newButton, releaseButton, deleteButton);
+
+        tableView = new TableView<>();
+        tableView.getStyleClass().add("dashboard-table");
+        setupTable();
+        refreshTable();
+        VBox.setVgrow(tableView, Priority.ALWAYS);
+
+        panel.getChildren().addAll(title, subtitle, actions, tableView);
+        return panel;
+    }
+
+    private VBox createFormPanel() {
+        VBox panel = new VBox(12);
+        panel.getStyleClass().addAll("content-panel", "editor-panel");
+        panel.setPrefWidth(380);
+
+        Label title = new Label("Formulaire étudiant");
+        title.getStyleClass().add("dialog-title");
+        Label subtitle = new Label("Le formulaire permet aussi d'affecter immédiatement une chambre libre.");
+        subtitle.getStyleClass().add("dialog-subtitle");
+        subtitle.setWrapText(true);
+
+        idField = new TextField();
+        nomField = new TextField();
+        prenomField = new TextField();
+        emailField = new TextField();
+        matriculeField = new TextField();
+        specialiteField = new TextField();
+        chambreCombo = new ComboBox<>();
+        chambreCombo.setMaxWidth(Double.MAX_VALUE);
+
+        saveButton = new Button("Enregistrer");
+        saveButton.getStyleClass().add("primary-button");
+        saveButton.setMaxWidth(Double.MAX_VALUE);
+        saveButton.setOnAction(e -> saveEtudiant());
+
+        Button resetButton = new Button("Réinitialiser");
+        resetButton.getStyleClass().add("secondary-button");
+        resetButton.setMaxWidth(Double.MAX_VALUE);
+        resetButton.setOnAction(e -> resetForm());
+
+        panel.getChildren().addAll(
+                title, subtitle,
+                new Label("Identifiant"), idField,
+                new Label("Nom"), nomField,
+                new Label("Prénom"), prenomField,
+                new Label("Email"), emailField,
+                new Label("Matricule"), matriculeField,
+                new Label("Spécialité"), specialiteField,
+                new Label("Chambre"), chambreCombo,
+                saveButton, resetButton);
+        refreshChambreChoices(null);
+        return panel;
     }
 
     private void setupTable() {
-        tableView.getStyleClass().add("dashboard-table");
-        TableColumn<Etudiant, String> nomCol = new TableColumn<>("Nom");
-        nomCol.setCellValueFactory(
-                cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().getNomComplet()));
+        TableColumn<Etudiant, String> nomCol = new TableColumn<>("Nom complet");
+        nomCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getNomComplet()));
+
+        TableColumn<Etudiant, String> emailCol = new TableColumn<>("Email");
+        emailCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getEmail()));
 
         TableColumn<Etudiant, String> matriculeCol = new TableColumn<>("Matricule");
-        matriculeCol.setCellValueFactory(
-                cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().getNumeroMatricule()));
+        matriculeCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getNumeroMatricule()));
 
-        TableColumn<Etudiant, String> specialiteCol = new TableColumn<>("Spécialité");
-        specialiteCol.setCellValueFactory(
-                cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().getSpecialite()));
-
-        TableColumn<Etudiant, String> chambresCol = new TableColumn<>("Chambre");
-        chambresCol.setCellValueFactory(cellData -> {
-            Etudiant e = cellData.getValue();
-            if (e.hasRoom()) {
-                Chambre c = gestionChambre.getChambre(e.getChambreId());
-                return new javafx.beans.property.SimpleStringProperty(c != null ? c.getCode() : "N/A");
+        TableColumn<Etudiant, String> chambreCol = new TableColumn<>("Chambre");
+        chambreCol.setCellValueFactory(cell -> {
+            Etudiant etudiant = cell.getValue();
+            if (!etudiant.hasRoom()) {
+                return new SimpleStringProperty("Non affectée");
             }
-            return new javafx.beans.property.SimpleStringProperty("Non affectée");
+            Chambre chambre = gestionChambre.getChambre(etudiant.getChambreId());
+            return new SimpleStringProperty(chambre != null ? chambre.getCode() : "N/A");
         });
 
-        tableView.getColumns().add(nomCol);
-        tableView.getColumns().add(matriculeCol);
-        tableView.getColumns().add(specialiteCol);
-        tableView.getColumns().add(chambresCol);
-        tableView.setPrefHeight(450);
+        tableView.getColumns().setAll(nomCol, emailCol, matriculeCol, chambreCol);
+        tableView.getSelectionModel().selectedItemProperty().addListener((obs, oldValue, newValue) -> populateForm(newValue));
+    }
+
+    private void populateForm(Etudiant etudiant) {
+        selectedEtudiant = etudiant;
+        if (etudiant == null) {
+            return;
+        }
+        idField.setText(etudiant.getId());
+        idField.setDisable(true);
+        nomField.setText(etudiant.getNom());
+        prenomField.setText(etudiant.getPrenom());
+        emailField.setText(etudiant.getEmail());
+        matriculeField.setText(etudiant.getNumeroMatricule());
+        specialiteField.setText(etudiant.getSpecialite());
+        refreshChambreChoices(etudiant.getChambreId());
+        if (etudiant.hasRoom()) {
+            chambreCombo.setValue(gestionChambre.getChambre(etudiant.getChambreId()));
+        } else {
+            chambreCombo.setValue(null);
+        }
+        saveButton.setText("Mettre à jour");
+    }
+
+    private void saveEtudiant() {
+        if (idField.getText().isBlank() || nomField.getText().isBlank() || prenomField.getText().isBlank()
+                || emailField.getText().isBlank() || matriculeField.getText().isBlank() || specialiteField.getText().isBlank()) {
+            showAlert("Erreur", "Veuillez remplir tous les champs.");
+            return;
+        }
+
+        if (selectedEtudiant == null) {
+            Etudiant etudiant = new Etudiant(
+                    idField.getText().trim(),
+                    nomField.getText().trim(),
+                    prenomField.getText().trim(),
+                    emailField.getText().trim(),
+                    matriculeField.getText().trim(),
+                    specialiteField.getText().trim());
+            gestionEtudiant.addEtudiant(etudiant);
+            selectedEtudiant = etudiant;
+        } else {
+            selectedEtudiant.setNom(nomField.getText().trim());
+            selectedEtudiant.setPrenom(prenomField.getText().trim());
+            selectedEtudiant.setEmail(emailField.getText().trim());
+            selectedEtudiant.setNumeroMatricule(matriculeField.getText().trim());
+            selectedEtudiant.setSpecialite(specialiteField.getText().trim());
+            gestionEtudiant.updateEtudiant(selectedEtudiant);
+        }
+
+        updateRoomAssignment(selectedEtudiant, chambreCombo.getValue());
+        refreshTable();
+        resetForm();
+    }
+
+    private void updateRoomAssignment(Etudiant etudiant, Chambre nouvelleChambre) {
+        if (etudiant.hasRoom()) {
+            String ancienneChambreId = etudiant.getChambreId();
+            if (nouvelleChambre == null || !ancienneChambreId.equals(nouvelleChambre.getId())) {
+                gestionChambre.libererChambre(ancienneChambreId);
+                gestionEtudiant.libererChambre(etudiant.getId());
+            }
+        }
+
+        if (nouvelleChambre != null && !nouvelleChambre.getId().equals(etudiant.getChambreId())) {
+            gestionEtudiant.affecterChambre(etudiant.getId(), nouvelleChambre.getId(), LocalDate.now().toString());
+            gestionChambre.affecterChambre(nouvelleChambre.getId(), etudiant.getId());
+        }
+    }
+
+    private void libererChambre() {
+        Etudiant selected = tableView.getSelectionModel().getSelectedItem();
+        if (selected == null || !selected.hasRoom()) {
+            showAlert("Erreur", "Veuillez sélectionner un étudiant ayant déjà une chambre.");
+            return;
+        }
+        gestionChambre.libererChambre(selected.getChambreId());
+        gestionEtudiant.libererChambre(selected.getId());
+        refreshTable();
+        populateForm(selected);
+    }
+
+    private void deleteSelectedEtudiant() {
+        Etudiant selected = tableView.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showAlert("Erreur", "Veuillez sélectionner un étudiant.");
+            return;
+        }
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Confirmation");
+        confirm.setHeaderText("Supprimer l'étudiant ?");
+        confirm.setContentText(selected.getNomComplet());
+        if (confirm.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
+            if (selected.hasRoom()) {
+                gestionChambre.libererChambre(selected.getChambreId());
+            }
+            gestionEtudiant.deleteEtudiant(selected.getId());
+            refreshTable();
+            resetForm();
+        }
     }
 
     private void refreshTable() {
@@ -99,190 +269,32 @@ public class EtudiantViewController {
         tableView.setItems(data);
     }
 
-    private void showAddDialog() {
-        Stage dialog = new Stage();
-        dialog.setTitle("Ajouter un Étudiant");
-
-        VBox content = new VBox(10);
-        content.getStyleClass().add("content-panel");
-
-        TextField nomField = new TextField();
-        nomField.setPromptText("Nom");
-
-        TextField prenomField = new TextField();
-        prenomField.setPromptText("Prénom");
-
-        TextField emailField = new TextField();
-        emailField.setPromptText("Email");
-
-        TextField matriculeField = new TextField();
-        matriculeField.setPromptText("Numéro Matricule");
-
-        TextField specialiteField = new TextField();
-        specialiteField.setPromptText("Spécialité");
-
-        Button saveBtn = new Button("Enregistrer");
-        saveBtn.setOnAction(e -> {
-            if (validateInput(nomField, prenomField, emailField, matriculeField, specialiteField)) {
-                Etudiant etd = new Etudiant(
-                        "E" + System.currentTimeMillis(),
-                        nomField.getText(),
-                        prenomField.getText(),
-                        emailField.getText(),
-                        matriculeField.getText(),
-                        specialiteField.getText());
-                gestionEtudiant.addEtudiant(etd);
-                refreshTable();
-                dialog.close();
-            }
-        });
-
-        content.getChildren().addAll(
-                new Label("Nom:"), nomField,
-                new Label("Prénom:"), prenomField,
-                new Label("Email:"), emailField,
-                new Label("Matricule:"), matriculeField,
-                new Label("Spécialité:"), specialiteField,
-                saveBtn);
-
-        dialog.setScene(new Scene(content, 400, 400));
-        dialog.show();
-    }
-
-    private void showEditDialog() {
-        Etudiant selected = tableView.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            showAlert("Erreur", "Veuillez sélectionner un étudiant");
-            return;
-        }
-
-        Stage dialog = new Stage();
-        dialog.setTitle("Modifier un Étudiant");
-
-        VBox content = new VBox(10);
-        content.setStyle("-fx-padding: 15;");
-
-        TextField nomField = new TextField(selected.getNom());
-        TextField prenomField = new TextField(selected.getPrenom());
-        TextField emailField = new TextField(selected.getEmail());
-        TextField specialiteField = new TextField(selected.getSpecialite());
-
-        Button saveBtn = new Button("Enregistrer");
-        saveBtn.setOnAction(e -> {
-            selected.setNom(nomField.getText());
-            selected.setPrenom(prenomField.getText());
-            selected.setEmail(emailField.getText());
-            selected.setSpecialite(specialiteField.getText());
-            gestionEtudiant.updateEtudiant(selected);
-            refreshTable();
-            dialog.close();
-        });
-
-        content.getChildren().addAll(
-                new Label("Nom:"), nomField,
-                new Label("Prénom:"), prenomField,
-                new Label("Email:"), emailField,
-                new Label("Spécialité:"), specialiteField,
-                saveBtn);
-
-        dialog.setScene(new Scene(content, 400, 350));
-        dialog.show();
-    }
-
-    private void showAffecterDialog() {
-        Etudiant selected = tableView.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            showAlert("Erreur", "Veuillez sélectionner un étudiant");
-            return;
-        }
-
-        Stage dialog = new Stage();
-        dialog.setTitle("Affecter une Chambre");
-
-        VBox content = new VBox(10);
-        content.setStyle("-fx-padding: 15;");
-
-        Label etuLabel = new Label("Étudiant: " + selected.getNomComplet());
-        etuLabel.setStyle("-fx-font-weight: bold;");
-
-        ComboBox<Chambre> chambreCombo = new ComboBox<>();
-        chambreCombo.setItems(FXCollections.observableArrayList(gestionChambre.getChambresLibres()));
-
-        Button affecterBtn = new Button("Affecter");
-        affecterBtn.setOnAction(e -> {
-            if (chambreCombo.getValue() == null) {
-                showAlert("Erreur", "Veuillez sélectionner une chambre");
-                return;
-            }
-
-            Chambre chambre = chambreCombo.getValue();
-            gestionEtudiant.affecterChambre(selected.getId(), chambre.getId(), java.time.LocalDate.now().toString());
-            gestionChambre.affecterChambre(chambre.getId(), selected.getId());
-            refreshTable();
-            dialog.close();
-        });
-
-        content.getChildren().addAll(
-                etuLabel,
-                new Label("Chambre disponible:"),
-                chambreCombo,
-                affecterBtn);
-
-        dialog.setScene(new Scene(content, 400, 250));
-        dialog.show();
-    }
-
-    private void libererChambre() {
-        Etudiant selected = tableView.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            showAlert("Erreur", "Veuillez sélectionner un étudiant");
-            return;
-        }
-
-        if (!selected.hasRoom()) {
-            showAlert("Info", "Cet étudiant n'a pas de chambre affectée");
-            return;
-        }
-
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle("Confirmation");
-        confirm.setHeaderText("Libérer la chambre?");
-        confirm.setContentText("Êtes-vous sûr de vouloir libérer la chambre de " + selected.getNomComplet() + "?");
-
-        if (confirm.showAndWait().get() == ButtonType.OK) {
-            String chambreId = selected.getChambreId();
-            gestionEtudiant.libererChambre(selected.getId());
-            gestionChambre.libererChambre(chambreId);
-            refreshTable();
-        }
-    }
-
-    private void deleteEtudiant() {
-        Etudiant selected = tableView.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            showAlert("Erreur", "Veuillez sélectionner un étudiant");
-            return;
-        }
-
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle("Confirmation");
-        confirm.setHeaderText("Supprimer l'étudiant?");
-        confirm.setContentText("Êtes-vous sûr de vouloir supprimer " + selected.getNomComplet() + "?");
-
-        if (confirm.showAndWait().get() == ButtonType.OK) {
-            gestionEtudiant.deleteEtudiant(selected.getId());
-            refreshTable();
-        }
-    }
-
-    private boolean validateInput(TextField... fields) {
-        for (TextField field : fields) {
-            if (field.getText().isEmpty()) {
-                showAlert("Erreur", "Veuillez remplir tous les champs");
-                return false;
+    private void refreshChambreChoices(String chambreIdActuelle) {
+        ObservableList<Chambre> choices = FXCollections.observableArrayList(gestionChambre.getChambresLibres());
+        if (chambreIdActuelle != null) {
+            Chambre chambreActuelle = gestionChambre.getChambre(chambreIdActuelle);
+            if (chambreActuelle != null && !choices.contains(chambreActuelle)) {
+                choices.add(chambreActuelle);
             }
         }
-        return true;
+        chambreCombo.setItems(choices);
+    }
+
+    private void resetForm() {
+        selectedEtudiant = null;
+        idField.clear();
+        idField.setDisable(false);
+        nomField.clear();
+        prenomField.clear();
+        emailField.clear();
+        matriculeField.clear();
+        specialiteField.clear();
+        chambreCombo.setValue(null);
+        refreshChambreChoices(null);
+        saveButton.setText("Enregistrer");
+        if (tableView != null) {
+            tableView.getSelectionModel().clearSelection();
+        }
     }
 
     private void showAlert(String title, String message) {

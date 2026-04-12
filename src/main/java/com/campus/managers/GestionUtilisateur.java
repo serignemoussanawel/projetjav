@@ -1,38 +1,63 @@
 package com.campus.managers;
 
-import com.campus.models.*;
-import java.util.*;
+import com.campus.database.DatabaseManager;
+import com.campus.models.UserRole;
+import com.campus.models.Utilisateur;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 public class GestionUtilisateur {
-    private Map<String, Utilisateur> utilisateurs;
+    private final Map<String, Utilisateur> utilisateurs;
     private Utilisateur utilisateurConnecte;
 
     public GestionUtilisateur() {
         this.utilisateurs = new LinkedHashMap<>();
         this.utilisateurConnecte = null;
-        initialiserDonnees();
+        chargerDepuisLaBase();
     }
 
-    private void initialiserDonnees() {
-        addUtilisateur(new Utilisateur("U1", "Admin", "System", "admin@univ.fr", "admin123", UserRole.ADMIN));
-        
-        Utilisateur chef1 = new Utilisateur("U2", "Durand", "Michel", "chef1@univ.fr", "chef123", UserRole.CHEF_BATIMENT);
-        chef1.setBatimentId("B1");
-        addUtilisateur(chef1);
+    private void chargerDepuisLaBase() {
+        utilisateurs.clear();
 
-        Utilisateur chef2 = new Utilisateur("U3", "Leclerc", "Francoise", "chef2@univ.fr", "chef123", UserRole.CHEF_BATIMENT);
-        chef2.setBatimentId("B2");
-        addUtilisateur(chef2);
+        String sql = """
+                SELECT id, nom, prenom, email, mot_de_passe, role, batiment_id, actif
+                FROM utilisateurs
+                ORDER BY prenom, nom
+                """;
 
-        Utilisateur etudiant1 = new Utilisateur("U4", "Dupont", "Jean", "jean@univ.fr", "etud123", UserRole.ETUDIANT);
-        addUtilisateur(etudiant1);
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()) {
 
-        Utilisateur etudiant2 = new Utilisateur("U5", "Martin", "Marie", "marie@univ.fr", "etud123", UserRole.ETUDIANT);
-        addUtilisateur(etudiant2);
+            while (resultSet.next()) {
+                Utilisateur utilisateur = mapUtilisateur(resultSet);
+                utilisateurs.put(utilisateur.getId(), utilisateur);
+            }
+        } catch (SQLException e) {
+            throw new IllegalStateException("Impossible de charger les utilisateurs depuis la base de donnees.", e);
+        }
     }
 
     public void addUtilisateur(Utilisateur utilisateur) {
-        utilisateurs.put(utilisateur.getId(), utilisateur);
+        String sql = """
+                INSERT INTO utilisateurs (id, nom, prenom, email, mot_de_passe, role, batiment_id, actif)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """;
+
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            DatabaseManager.bindUtilisateur(statement, utilisateur);
+            statement.executeUpdate();
+            utilisateurs.put(utilisateur.getId(), utilisateur);
+        } catch (SQLException e) {
+            throw new IllegalStateException("Impossible d'ajouter l'utilisateur dans la base de donnees.", e);
+        }
     }
 
     public Utilisateur getUtilisateur(String id) {
@@ -40,11 +65,40 @@ public class GestionUtilisateur {
     }
 
     public void updateUtilisateur(Utilisateur utilisateur) {
-        utilisateurs.put(utilisateur.getId(), utilisateur);
+        String sql = """
+                UPDATE utilisateurs
+                SET nom = ?, prenom = ?, email = ?, mot_de_passe = ?, role = ?, batiment_id = ?, actif = ?
+                WHERE id = ?
+                """;
+
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, utilisateur.getNom());
+            statement.setString(2, utilisateur.getPrenom());
+            statement.setString(3, utilisateur.getEmail());
+            statement.setString(4, utilisateur.getMotDePasse());
+            statement.setString(5, utilisateur.getRole().name());
+            statement.setString(6, utilisateur.getBatimentId());
+            statement.setBoolean(7, utilisateur.isActif());
+            statement.setString(8, utilisateur.getId());
+            statement.executeUpdate();
+            utilisateurs.put(utilisateur.getId(), utilisateur);
+        } catch (SQLException e) {
+            throw new IllegalStateException("Impossible de mettre a jour l'utilisateur dans la base de donnees.", e);
+        }
     }
 
     public void deleteUtilisateur(String id) {
-        utilisateurs.remove(id);
+        String sql = "DELETE FROM utilisateurs WHERE id = ?";
+
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, id);
+            statement.executeUpdate();
+            utilisateurs.remove(id);
+        } catch (SQLException e) {
+            throw new IllegalStateException("Impossible de supprimer l'utilisateur de la base de donnees.", e);
+        }
     }
 
     public List<Utilisateur> getAllUtilisateurs() {
@@ -53,17 +107,35 @@ public class GestionUtilisateur {
 
     public List<Utilisateur> getUtilisateursByRole(UserRole role) {
         return utilisateurs.values().stream()
-            .filter(u -> u.getRole() == role && u.isActif())
-            .toList();
+                .filter(u -> u.getRole() == role && u.isActif())
+                .toList();
     }
 
     public Utilisateur authentifier(String email, String motDePasse) {
-        for (Utilisateur u : utilisateurs.values()) {
-            if (u.getEmail().equals(email) && u.getMotDePasse().equals(motDePasse) && u.isActif()) {
-                this.utilisateurConnecte = u;
-                return u;
+        String sql = """
+                SELECT id, nom, prenom, email, mot_de_passe, role, batiment_id, actif
+                FROM utilisateurs
+                WHERE email = ? AND mot_de_passe = ? AND actif = TRUE
+                LIMIT 1
+                """;
+
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, email);
+            statement.setString(2, motDePasse);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    Utilisateur utilisateur = mapUtilisateur(resultSet);
+                    utilisateurs.put(utilisateur.getId(), utilisateur);
+                    this.utilisateurConnecte = utilisateur;
+                    return utilisateur;
+                }
             }
+        } catch (SQLException e) {
+            throw new IllegalStateException("Impossible d'authentifier l'utilisateur depuis la base de donnees.", e);
         }
+
         return null;
     }
 
@@ -85,8 +157,21 @@ public class GestionUtilisateur {
 
     public Utilisateur getChefBatiment(String batimentId) {
         return utilisateurs.values().stream()
-            .filter(u -> u.getRole() == UserRole.CHEF_BATIMENT && batimentId.equals(u.getBatimentId()))
-            .findFirst()
-            .orElse(null);
+                .filter(u -> u.getRole() == UserRole.CHEF_BATIMENT && batimentId.equals(u.getBatimentId()))
+                .findFirst()
+                .orElse(null);
+    }
+
+    private Utilisateur mapUtilisateur(ResultSet resultSet) throws SQLException {
+        Utilisateur utilisateur = new Utilisateur(
+                resultSet.getString("id"),
+                resultSet.getString("nom"),
+                resultSet.getString("prenom"),
+                resultSet.getString("email"),
+                resultSet.getString("mot_de_passe"),
+                UserRole.valueOf(resultSet.getString("role")));
+        utilisateur.setBatimentId(resultSet.getString("batiment_id"));
+        utilisateur.setActif(resultSet.getBoolean("actif"));
+        return utilisateur;
     }
 }

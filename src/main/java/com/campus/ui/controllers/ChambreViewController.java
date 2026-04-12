@@ -1,19 +1,42 @@
 package com.campus.ui.controllers;
 
-import com.campus.managers.*;
-import com.campus.models.*;
+import com.campus.managers.GestionBatiment;
+import com.campus.managers.GestionChambre;
+import com.campus.models.Batiment;
+import com.campus.models.Chambre;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.Spinner;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 public class ChambreViewController {
-    private GestionBatiment gestionBatiment;
-    private GestionChambre gestionChambre;
+    private final GestionBatiment gestionBatiment;
+    private final GestionChambre gestionChambre;
     private TableView<Chambre> tableView;
+    private TextField idField;
+    private TextField codeField;
+    private Spinner<Integer> numeroSpinner;
+    private ComboBox<Batiment> batimentCombo;
+    private Spinner<Integer> etageSpinner;
+    private Spinner<Integer> capaciteSpinner;
+    private ComboBox<String> typeCombo;
+    private ComboBox<String> etatCombo;
+    private Button saveButton;
+    private Chambre selectedChambre;
 
     public ChambreViewController(GestionBatiment gestionBatiment, GestionChambre gestionChambre) {
         this.gestionBatiment = gestionBatiment;
@@ -23,93 +46,190 @@ public class ChambreViewController {
     public void show() {
         Stage stage = new Stage();
         stage.setTitle("Gestion des Chambres");
-        stage.setScene(new Scene(createLayout(), 1000, 650));
+        Scene scene = new Scene(createView(), 1240, 720);
+        scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
+        stage.setScene(scene);
         stage.show();
     }
 
-    private VBox createLayout() {
-        VBox root = new VBox(10);
-        root.setStyle("-fx-padding: 15;");
+    public HBox createView() {
+        HBox root = new HBox(18);
+        root.getStyleClass().add("split-view");
 
-        Label title = new Label("Gestion des Chambres");
-        title.setStyle("-fx-font-size: 16; -fx-font-weight: bold;");
-
-        HBox filterBox = createFilterBox();
-        HBox buttonBox = createButtonBox();
-
-        tableView = new TableView<>();
-        setupTable();
-        refreshTable();
-
-        root.getChildren().addAll(title, filterBox, buttonBox, tableView);
+        VBox listPanel = createListPanel();
+        VBox formPanel = createFormPanel();
+        HBox.setHgrow(listPanel, Priority.ALWAYS);
+        root.getChildren().addAll(listPanel, formPanel);
         return root;
     }
 
-    private HBox createFilterBox() {
-        HBox box = new HBox(10);
-        box.setStyle("-fx-padding: 10;");
+    private VBox createListPanel() {
+        VBox panel = new VBox(16);
+        panel.getStyleClass().add("content-panel");
+        HBox.setHgrow(panel, Priority.ALWAYS);
 
-        Label batimentLabel = new Label("Bâtiment:");
-        ComboBox<Batiment> batimentCombo = new ComboBox<>();
-        batimentCombo.setItems(FXCollections.observableArrayList(gestionBatiment.getAllBatiments()));
+        Label title = new Label("Gestion des Chambres");
+        title.getStyleClass().add("view-title");
 
-        batimentCombo.setOnAction(e -> {
-            if (batimentCombo.getValue() != null) {
-                refreshTableForBatiment(batimentCombo.getValue().getId());
-            } else {
-                refreshTable();
-            }
-        });
+        Label subtitle = new Label("Gardez la main sur les chambres et leur disponibilité dans une vue large.");
+        subtitle.getStyleClass().add("panel-subtitle");
 
-        box.getChildren().addAll(batimentLabel, batimentCombo);
-        return box;
+        HBox actions = new HBox(10);
+        actions.getStyleClass().add("toolbar-row");
+        Button newButton = new Button("Nouvelle");
+        newButton.getStyleClass().add("primary-button");
+        newButton.setOnAction(e -> resetForm());
+        Button deleteButton = new Button("Supprimer");
+        deleteButton.getStyleClass().add("danger-button");
+        deleteButton.setOnAction(e -> deleteSelectedChambre());
+        actions.getChildren().addAll(newButton, deleteButton);
+
+        tableView = new TableView<>();
+        tableView.getStyleClass().add("dashboard-table");
+        setupTable();
+        refreshTable();
+        VBox.setVgrow(tableView, Priority.ALWAYS);
+
+        panel.getChildren().addAll(title, subtitle, actions, tableView);
+        return panel;
     }
 
-    private HBox createButtonBox() {
-        HBox box = new HBox(10);
-        
-        Button addBtn = new Button("Ajouter");
-        Button editBtn = new Button("Modifier");
-        Button deleteBtn = new Button("Supprimer");
+    private VBox createFormPanel() {
+        VBox panel = new VBox(12);
+        panel.getStyleClass().addAll("content-panel", "editor-panel");
+        panel.setPrefWidth(380);
 
-        addBtn.setOnAction(e -> showAddDialog());
-        editBtn.setOnAction(e -> showEditDialog());
-        deleteBtn.setOnAction(e -> deleteChambre());
+        Label title = new Label("Formulaire chambre");
+        title.getStyleClass().add("dialog-title");
+        Label subtitle = new Label("Sélectionnez une ligne pour modifier ses informations.");
+        subtitle.getStyleClass().add("dialog-subtitle");
+        subtitle.setWrapText(true);
 
-        box.getChildren().addAll(addBtn, editBtn, deleteBtn);
-        return box;
+        idField = new TextField();
+        codeField = new TextField();
+        numeroSpinner = new Spinner<>(1, 999, 1);
+        batimentCombo = new ComboBox<>(FXCollections.observableArrayList(gestionBatiment.getAllBatiments()));
+        batimentCombo.setMaxWidth(Double.MAX_VALUE);
+        etageSpinner = new Spinner<>(1, 20, 1);
+        capaciteSpinner = new Spinner<>(1, 10, 1);
+        typeCombo = new ComboBox<>(FXCollections.observableArrayList("Simple", "Double", "Suite"));
+        typeCombo.setMaxWidth(Double.MAX_VALUE);
+        etatCombo = new ComboBox<>(FXCollections.observableArrayList("Libre", "Occupée", "Maintenance"));
+        etatCombo.setMaxWidth(Double.MAX_VALUE);
+
+        saveButton = new Button("Enregistrer");
+        saveButton.getStyleClass().add("primary-button");
+        saveButton.setMaxWidth(Double.MAX_VALUE);
+        saveButton.setOnAction(e -> saveChambre());
+
+        Button resetButton = new Button("Réinitialiser");
+        resetButton.getStyleClass().add("secondary-button");
+        resetButton.setMaxWidth(Double.MAX_VALUE);
+        resetButton.setOnAction(e -> resetForm());
+
+        panel.getChildren().addAll(
+                title, subtitle,
+                new Label("Identifiant"), idField,
+                new Label("Code"), codeField,
+                new Label("Numéro"), numeroSpinner,
+                new Label("Bâtiment"), batimentCombo,
+                new Label("Étage"), etageSpinner,
+                new Label("Capacité"), capaciteSpinner,
+                new Label("Type"), typeCombo,
+                new Label("État"), etatCombo,
+                saveButton, resetButton);
+        return panel;
     }
 
     private void setupTable() {
-        tableView.getStyleClass().add("dashboard-table");
         TableColumn<Chambre, String> codeCol = new TableColumn<>("Code");
-        codeCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().getCode()));
-
-        TableColumn<Chambre, Integer> numeroCol = new TableColumn<>("Numéro");
-        numeroCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleObjectProperty<>(cellData.getValue().getNumero()));
+        codeCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getCode()));
 
         TableColumn<Chambre, String> batimentCol = new TableColumn<>("Bâtiment");
-        batimentCol.setCellValueFactory(cellData -> {
-            Batiment b = gestionBatiment.getBatiment(cellData.getValue().getBatimentId());
-            return new javafx.beans.property.SimpleStringProperty(b != null ? b.getNom() : "N/A");
+        batimentCol.setCellValueFactory(cell -> {
+            Batiment batiment = gestionBatiment.getBatiment(cell.getValue().getBatimentId());
+            return new SimpleStringProperty(batiment != null ? batiment.getNom() : "N/A");
         });
 
         TableColumn<Chambre, Integer> etageCol = new TableColumn<>("Étage");
-        etageCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleObjectProperty<>(cellData.getValue().getEtage()));
+        etageCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getEtage()));
 
         TableColumn<Chambre, String> typeCol = new TableColumn<>("Type");
-        typeCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().getType()));
+        typeCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getType()));
 
         TableColumn<Chambre, String> etatCol = new TableColumn<>("État");
-        etatCol.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().getEtat()));
+        etatCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getEtat()));
 
-        tableView.getColumns().add(codeCol);
-        tableView.getColumns().add(numeroCol);
-        tableView.getColumns().add(batimentCol);
-        tableView.getColumns().add(etageCol);
-        tableView.getColumns().add(typeCol);
-        tableView.getColumns().add(etatCol);
-        tableView.setPrefHeight(450);
+        tableView.getColumns().setAll(codeCol, batimentCol, etageCol, typeCol, etatCol);
+        tableView.getSelectionModel().selectedItemProperty().addListener((obs, oldValue, newValue) -> populateForm(newValue));
+    }
+
+    private void populateForm(Chambre chambre) {
+        selectedChambre = chambre;
+        if (chambre == null) {
+            return;
+        }
+        idField.setText(chambre.getId());
+        idField.setDisable(true);
+        codeField.setText(chambre.getCode());
+        numeroSpinner.getValueFactory().setValue(chambre.getNumero());
+        batimentCombo.setValue(gestionBatiment.getBatiment(chambre.getBatimentId()));
+        etageSpinner.getValueFactory().setValue(chambre.getEtage());
+        capaciteSpinner.getValueFactory().setValue(chambre.getCapacite());
+        typeCombo.setValue(chambre.getType());
+        etatCombo.setValue(chambre.getEtat());
+        saveButton.setText("Mettre à jour");
+    }
+
+    private void saveChambre() {
+        if (idField.getText().isBlank() || codeField.getText().isBlank() || batimentCombo.getValue() == null
+                || typeCombo.getValue() == null || etatCombo.getValue() == null) {
+            showAlert("Erreur", "Veuillez remplir tous les champs obligatoires.");
+            return;
+        }
+
+        if (selectedChambre == null) {
+            Chambre chambre = new Chambre(
+                    idField.getText().trim(),
+                    codeField.getText().trim(),
+                    numeroSpinner.getValue(),
+                    batimentCombo.getValue().getId(),
+                    etageSpinner.getValue(),
+                    capaciteSpinner.getValue(),
+                    typeCombo.getValue());
+            chambre.setEtat(etatCombo.getValue());
+            gestionChambre.addChambre(chambre);
+        } else {
+            selectedChambre.setCode(codeField.getText().trim());
+            selectedChambre.setNumero(numeroSpinner.getValue());
+            selectedChambre.setBatimentId(batimentCombo.getValue().getId());
+            selectedChambre.setEtage(etageSpinner.getValue());
+            selectedChambre.setCapacite(capaciteSpinner.getValue());
+            selectedChambre.setType(typeCombo.getValue());
+            selectedChambre.setEtat(etatCombo.getValue());
+            gestionChambre.updateChambre(selectedChambre);
+        }
+
+        refreshTable();
+        resetForm();
+    }
+
+    private void deleteSelectedChambre() {
+        Chambre selected = tableView.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showAlert("Erreur", "Veuillez sélectionner une chambre.");
+            return;
+        }
+
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Confirmation");
+        confirm.setHeaderText("Supprimer la chambre ?");
+        confirm.setContentText(selected.getCode());
+        if (confirm.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
+            gestionChambre.deleteChambre(selected.getId());
+            refreshTable();
+            resetForm();
+        }
     }
 
     private void refreshTable() {
@@ -117,138 +237,25 @@ public class ChambreViewController {
         tableView.setItems(data);
     }
 
-    private void refreshTableForBatiment(String batimentId) {
-        ObservableList<Chambre> data = FXCollections.observableArrayList(
-            gestionChambre.getChambresByBatiment(batimentId)
-        );
-        tableView.setItems(data);
-    }
-
-    private void showAddDialog() {
-        Stage dialog = new Stage();
-        dialog.setTitle("Ajouter une Chambre");
-
-        VBox content = new VBox(10);
-        content.getStyleClass().add("content-panel");
-
-        TextField codeField = new TextField();
-        codeField.setPromptText("Code (ex: A-101)");
-
-        Spinner<Integer> numeroSpinner = new Spinner<>(100, 999, 100);
-        
-        ComboBox<Batiment> batimentCombo = new ComboBox<>();
-        batimentCombo.setItems(FXCollections.observableArrayList(gestionBatiment.getAllBatiments()));
-
-        Spinner<Integer> etageSpinner = new Spinner<>(1, 10, 1);
-        
-        ComboBox<String> typeCombo = new ComboBox<>();
-        typeCombo.setItems(FXCollections.observableArrayList("Simple", "Double", "Suite"));
-
-        Spinner<Integer> capaciteSpinner = new Spinner<>(1, 5, 1);
-
-        Button saveBtn = new Button("Enregistrer");
-        saveBtn.setOnAction(e -> {
-            if (codeField.getText().isEmpty() || batimentCombo.getValue() == null || typeCombo.getValue() == null) {
-                showAlert("Erreur", "Veuillez remplir tous les champs");
-                return;
-            }
-
-            Chambre c = new Chambre(
-                "C" + System.currentTimeMillis(),
-                codeField.getText(),
-                numeroSpinner.getValue(),
-                batimentCombo.getValue().getId(),
-                etageSpinner.getValue(),
-                capaciteSpinner.getValue(),
-                typeCombo.getValue()
-            );
-            gestionChambre.addChambre(c);
-            refreshTable();
-            dialog.close();
-        });
-
-        content.getChildren().addAll(
-            new Label("Code:"), codeField,
-            new Label("Numéro:"), numeroSpinner,
-            new Label("Bâtiment:"), batimentCombo,
-            new Label("Étage:"), etageSpinner,
-            new Label("Type:"), typeCombo,
-            new Label("Capacité:"), capaciteSpinner,
-            saveBtn
-        );
-
-        dialog.setScene(new Scene(content, 400, 450));
-        dialog.show();
-    }
-
-    private void showEditDialog() {
-        Chambre selected = tableView.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            showAlert("Erreur", "Veuillez sélectionner une chambre");
-            return;
-        }
-
-        Stage dialog = new Stage();
-        dialog.setTitle("Modifier une Chambre");
-
-        VBox content = new VBox(10);
-        content.setStyle("-fx-padding: 15;");
-
-        TextField codeField = new TextField(selected.getCode());
-        Spinner<Integer> numeroSpinner = new Spinner<>(100, 999, selected.getNumero());
-        Spinner<Integer> etageSpinner = new Spinner<>(1, 10, selected.getEtage());
-        
-        ComboBox<String> typeCombo = new ComboBox<>();
-        typeCombo.setItems(FXCollections.observableArrayList("Simple", "Double", "Suite"));
-        typeCombo.setValue(selected.getType());
-
-        Spinner<Integer> capaciteSpinner = new Spinner<>(1, 5, selected.getCapacite());
-
-        Button saveBtn = new Button("Enregistrer");
-        saveBtn.setOnAction(e -> {
-            selected.setCode(codeField.getText());
-            selected.setNumero(numeroSpinner.getValue());
-            selected.setEtage(etageSpinner.getValue());
-            selected.setType(typeCombo.getValue());
-            selected.setCapacite(capaciteSpinner.getValue());
-            gestionChambre.updateChambre(selected);
-            refreshTable();
-            dialog.close();
-        });
-
-        content.getChildren().addAll(
-            new Label("Code:"), codeField,
-            new Label("Numéro:"), numeroSpinner,
-            new Label("Étage:"), etageSpinner,
-            new Label("Type:"), typeCombo,
-            new Label("Capacité:"), capaciteSpinner,
-            saveBtn
-        );
-
-        dialog.setScene(new Scene(content, 400, 400));
-        dialog.show();
-    }
-
-    private void deleteChambre() {
-        Chambre selected = tableView.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            showAlert("Erreur", "Veuillez sélectionner une chambre");
-            return;
-        }
-
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle("Confirmation");
-        confirm.setHeaderText("Supprimer la chambre?");
-        confirm.setContentText("Êtes-vous sûr de vouloir supprimer " + selected.getCode() + "?");
-
-        if (confirm.showAndWait().get() == ButtonType.OK) {
-            gestionChambre.deleteChambre(selected.getId());
-            refreshTable();
+    private void resetForm() {
+        selectedChambre = null;
+        idField.clear();
+        idField.setDisable(false);
+        codeField.clear();
+        numeroSpinner.getValueFactory().setValue(1);
+        batimentCombo.setValue(null);
+        etageSpinner.getValueFactory().setValue(1);
+        capaciteSpinner.getValueFactory().setValue(1);
+        typeCombo.setValue(null);
+        etatCombo.setValue("Libre");
+        saveButton.setText("Enregistrer");
+        if (tableView != null) {
+            tableView.getSelectionModel().clearSelection();
         }
     }
 
     private void showAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(message);
