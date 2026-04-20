@@ -27,7 +27,7 @@ public class Main extends Application {
         Scene scene = new Scene(loginController.createLoginView(), 600, 450);
         scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
 
-        primaryStage.setTitle("Campus Room Manager - Login");
+        primaryStage.setTitle("Système de Gestion et de Codification des Chambres du Campus");
         primaryStage.setScene(scene);
         primaryStage.setResizable(true);
         primaryStage.show();

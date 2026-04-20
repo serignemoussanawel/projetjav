@@ -32,8 +32,8 @@ public class GestionUtilisateur {
                 """;
 
         try (Connection connection = DatabaseManager.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql);
-             ResultSet resultSet = statement.executeQuery()) {
+                PreparedStatement statement = connection.prepareStatement(sql);
+                ResultSet resultSet = statement.executeQuery()) {
 
             while (resultSet.next()) {
                 Utilisateur utilisateur = mapUtilisateur(resultSet);
@@ -51,7 +51,7 @@ public class GestionUtilisateur {
                 """;
 
         try (Connection connection = DatabaseManager.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
+                PreparedStatement statement = connection.prepareStatement(sql)) {
             DatabaseManager.bindUtilisateur(statement, utilisateur);
             statement.executeUpdate();
             utilisateurs.put(utilisateur.getId(), utilisateur);
@@ -72,7 +72,7 @@ public class GestionUtilisateur {
                 """;
 
         try (Connection connection = DatabaseManager.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
+                PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, utilisateur.getNom());
             statement.setString(2, utilisateur.getPrenom());
             statement.setString(3, utilisateur.getEmail());
@@ -84,7 +84,7 @@ public class GestionUtilisateur {
             statement.executeUpdate();
             utilisateurs.put(utilisateur.getId(), utilisateur);
         } catch (SQLException e) {
-            throw new IllegalStateException("Impossible de mettre a jour l'utilisateur dans la base de donnees.", e);
+            throw new IllegalStateException("Impossible de modifier l'utilisateur dans la base de donnees.", e);
         }
     }
 
@@ -92,7 +92,7 @@ public class GestionUtilisateur {
         String sql = "DELETE FROM utilisateurs WHERE id = ?";
 
         try (Connection connection = DatabaseManager.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
+                PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, id);
             statement.executeUpdate();
             utilisateurs.remove(id);
@@ -120,7 +120,7 @@ public class GestionUtilisateur {
                 """;
 
         try (Connection connection = DatabaseManager.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
+                PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, email);
             statement.setString(2, motDePasse);
 

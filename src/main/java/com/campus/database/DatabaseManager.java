@@ -16,8 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class DatabaseManager {
-    private static final String DEFAULT_URL =
-            "jdbc:mysql://localhost:3306/gestion_chambres?createDatabaseIfNotExist=true&serverTimezone=UTC";
+    private static final String DEFAULT_URL = "jdbc:mysql://localhost:3306/gestion_chambres?createDatabaseIfNotExist=true&serverTimezone=UTC";
     private static final String DEFAULT_USER = "admin";
     private static final String DEFAULT_PASSWORD = "1234";
 
@@ -63,7 +62,7 @@ public final class DatabaseManager {
                 """;
 
         try (Connection connection = getConnection();
-             Statement statement = connection.createStatement()) {
+                Statement statement = connection.createStatement()) {
             statement.execute(sql);
         }
     }
@@ -80,7 +79,7 @@ public final class DatabaseManager {
                 """;
 
         try (Connection connection = getConnection();
-             Statement statement = connection.createStatement()) {
+                Statement statement = connection.createStatement()) {
             statement.execute(sql);
         }
     }
@@ -101,7 +100,7 @@ public final class DatabaseManager {
                 """;
 
         try (Connection connection = getConnection();
-             Statement statement = connection.createStatement()) {
+                Statement statement = connection.createStatement()) {
             statement.execute(sql);
         }
     }
@@ -122,7 +121,7 @@ public final class DatabaseManager {
                 """;
 
         try (Connection connection = getConnection();
-             Statement statement = connection.createStatement()) {
+                Statement statement = connection.createStatement()) {
             statement.execute(sql);
         }
     }
@@ -138,7 +137,7 @@ public final class DatabaseManager {
         List<Etudiant> missingEtudiants = new ArrayList<>();
 
         try (Connection connection = getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
+                PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, UserRole.ETUDIANT.name());
 
             try (ResultSet resultSet = statement.executeQuery()) {
@@ -167,7 +166,7 @@ public final class DatabaseManager {
                 """;
 
         try (Connection connection = getConnection();
-             PreparedStatement statement = connection.prepareStatement(insertSql)) {
+                PreparedStatement statement = connection.prepareStatement(insertSql)) {
             for (Etudiant etudiant : missingEtudiants) {
                 bindEtudiant(statement, etudiant);
                 statement.addBatch();

@@ -13,6 +13,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -51,7 +52,7 @@ public class UtilisateurViewController {
         root.getStyleClass().add("split-view");
 
         VBox listPanel = createListPanel();
-        VBox formPanel = createFormPanel();
+        ScrollPane formPanel = createFormPanel();
         HBox.setHgrow(listPanel, Priority.ALWAYS);
 
         root.getChildren().addAll(listPanel, formPanel);
@@ -92,7 +93,7 @@ public class UtilisateurViewController {
         return panel;
     }
 
-    private VBox createFormPanel() {
+    private ScrollPane createFormPanel() {
         VBox panel = new VBox(12);
         panel.getStyleClass().addAll("content-panel", "editor-panel");
         panel.setPrefWidth(360);
@@ -141,7 +142,13 @@ public class UtilisateurViewController {
                 new Label("Mot de passe"), passwordField,
                 new Label("Rôle"), roleCombo,
                 saveButton, resetButton);
-        return panel;
+
+        ScrollPane scrollPane = new ScrollPane(panel);
+        scrollPane.getStyleClass().add("editor-scroll");
+        scrollPane.setFitToWidth(true);
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        return scrollPane;
     }
 
     private void setupTable() {

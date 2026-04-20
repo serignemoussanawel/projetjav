@@ -28,7 +28,7 @@ public class GestionChambre {
                 """;
 
         try (Connection connection = DatabaseManager.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
+                PreparedStatement statement = connection.prepareStatement(sql)) {
             DatabaseManager.bindChambre(statement, chambre);
             statement.executeUpdate();
             chambres.put(chambre.getId(), chambre);
@@ -56,7 +56,7 @@ public class GestionChambre {
                 """;
 
         try (Connection connection = DatabaseManager.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
+                PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, chambre.getCode());
             statement.setInt(2, chambre.getNumero());
             statement.setString(3, chambre.getBatimentId());
@@ -69,7 +69,7 @@ public class GestionChambre {
             statement.executeUpdate();
             chambres.put(chambre.getId(), chambre);
         } catch (SQLException e) {
-            throw new IllegalStateException("Impossible de mettre a jour la chambre dans la base de donnees.", e);
+            throw new IllegalStateException("Impossible de modifier la chambre dans la base de donnees.", e);
         }
     }
 
@@ -77,7 +77,7 @@ public class GestionChambre {
         String sql = "DELETE FROM chambres WHERE id = ?";
 
         try (Connection connection = DatabaseManager.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
+                PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, id);
             statement.executeUpdate();
             chambres.remove(id);
@@ -172,8 +172,8 @@ public class GestionChambre {
                 """;
 
         try (Connection connection = DatabaseManager.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql);
-             ResultSet resultSet = statement.executeQuery()) {
+                PreparedStatement statement = connection.prepareStatement(sql);
+                ResultSet resultSet = statement.executeQuery()) {
 
             while (resultSet.next()) {
                 Chambre chambre = new Chambre(

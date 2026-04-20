@@ -11,10 +11,13 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Ellipse;
+import javafx.scene.shape.Polygon;
 import javafx.stage.Stage;
 
 public class LoginController {
@@ -93,7 +96,7 @@ public class LoginController {
         Label badge = new Label("Gestion intelligente du campus");
         badge.getStyleClass().add("login-badge");
 
-        Label title = new Label("Un espace moderne pour piloter bâtiments, chambres et utilisateurs.");
+        Label title = new Label("Page d'accueil du système de gestion de résidence universitaire");
         title.getStyleClass().add("login-hero-title");
         title.setWrapText(true);
 
@@ -114,7 +117,8 @@ public class LoginController {
         illustrationCard.getStyleClass().add("login-illustration-card");
         Label illusTitle = new Label("Vue résidence");
         illusTitle.getStyleClass().add("login-illustration-title");
-        Label illusText = new Label("Connexion rapide, suivi clair et interface pensée pour l'administration du campus.");
+        Label illusText = new Label(
+                "Connexion rapide, suivi clair et interface pensée pour l'administration du campus.");
         illusText.getStyleClass().add("login-illustration-text");
         illusText.setWrapText(true);
         illustrationCard.getChildren().addAll(illusTitle, illusText);
@@ -123,6 +127,84 @@ public class LoginController {
         heroContent.getChildren().addAll(badge, title, subtitle, highlights, illustration);
         visualPanel.getChildren().add(heroContent);
         return visualPanel;
+    }
+
+    private StackPane createLogoView() {
+        StackPane logo = new StackPane();
+        logo.getStyleClass().add("login-logo");
+        logo.setPrefSize(210, 240);
+        logo.setMinSize(210, 240);
+        logo.setMaxSize(210, 240);
+
+        Ellipse outerRing = new Ellipse(102, 118);
+        outerRing.setFill(Color.WHITE);
+        outerRing.setStroke(Color.web("#8d4b1f"));
+        outerRing.setStrokeWidth(3);
+
+        Ellipse innerRing = new Ellipse(90, 106);
+        innerRing.setFill(Color.TRANSPARENT);
+        innerRing.setStroke(Color.web("#b06c35"));
+        innerRing.setStrokeWidth(1.6);
+
+        Circle core = new Circle(58);
+        core.setFill(Color.web("#5d8fcd"));
+        core.setStroke(Color.web("#3f6ea8"));
+        core.setStrokeWidth(2);
+
+        Label topText = new Label("UNIVERSITE ALIOUNE DIOP");
+        topText.getStyleClass().add("login-logo-ring-text");
+        StackPane.setAlignment(topText, Pos.TOP_CENTER);
+        StackPane.setMargin(topText, new Insets(26, 0, 0, 0));
+
+        Label bottomText = new Label("de BAMBEY");
+        bottomText.getStyleClass().add("login-logo-ring-text");
+        StackPane.setAlignment(bottomText, Pos.BOTTOM_CENTER);
+        StackPane.setMargin(bottomText, new Insets(0, 0, 24, 0));
+
+        Label acronym = new Label("UADB");
+        acronym.getStyleClass().add("login-logo-acronym");
+
+        Label motto = new Label("L'Excellence est ma Constance,\nl'Ethique ma Vertu");
+        motto.getStyleClass().add("login-logo-motto");
+        motto.setTranslateY(38);
+        motto.setAlignment(Pos.CENTER);
+
+        Polygon leftPage = new Polygon(
+                -20.0, -4.0,
+                -3.0, -12.0,
+                -3.0, 10.0,
+                -20.0, 4.0);
+        leftPage.setFill(Color.WHITE);
+        leftPage.setStroke(Color.web("#d1dbe7"));
+
+        Polygon rightPage = new Polygon(
+                3.0, -12.0,
+                20.0, -4.0,
+                20.0, 4.0,
+                3.0, 10.0);
+        rightPage.setFill(Color.WHITE);
+        rightPage.setStroke(Color.web("#d1dbe7"));
+
+        Polygon cap = new Polygon(
+                0.0, -18.0,
+                24.0, -26.0,
+                24.0, -14.0,
+                0.0, -8.0);
+        cap.setFill(Color.web("#9a531f"));
+
+        Polygon feather = new Polygon(
+                24.0, -26.0,
+                44.0, -22.0,
+                34.0, -10.0,
+                24.0, -14.0);
+        feather.setFill(Color.web("#be8352"));
+
+        StackPane emblem = new StackPane(core, acronym, motto, leftPage, rightPage, cap, feather);
+        emblem.setMaxSize(116, 116);
+        emblem.setTranslateY(6);
+
+        logo.getChildren().addAll(outerRing, innerRing, topText, bottomText, emblem);
+        return logo;
     }
 
     private VBox createFormPanel() {
@@ -134,7 +216,10 @@ public class LoginController {
         card.getStyleClass().add("login-card");
         card.setMaxWidth(380);
 
-        Label titleLabel = new Label("Campus Room Manager");
+        StackPane logoContainer = new StackPane(createLogoView());
+        logoContainer.getStyleClass().add("login-logo-shell");
+
+        Label titleLabel = new Label("Connexion");
         titleLabel.getStyleClass().add("login-title");
 
         Label subtitleLabel = new Label("Connectez-vous pour accéder à votre espace.");
@@ -159,15 +244,19 @@ public class LoginController {
         loginButton.getStyleClass().add("login-button");
         loginButton.setOnAction(e -> handleLogin());
 
+        HBox buttonContainer = new HBox(loginButton);
+        buttonContainer.setAlignment(Pos.CENTER);
+
         errorLabel = new Label();
         errorLabel.getStyleClass().add("error-label");
 
         card.getChildren().addAll(
+                logoContainer,
                 titleLabel,
                 subtitleLabel,
                 emailLabel, emailField,
                 passwordLabel, passwordField,
-                loginButton,
+                buttonContainer,
                 errorLabel);
 
         formPanel.getChildren().add(card);

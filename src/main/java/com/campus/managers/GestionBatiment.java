@@ -35,7 +35,7 @@ public class GestionBatiment {
                 """;
 
         try (Connection connection = DatabaseManager.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
+                PreparedStatement statement = connection.prepareStatement(sql)) {
             DatabaseManager.bindBatiment(statement, batiment);
             statement.executeUpdate();
             batiments.put(batiment.getId(), batiment);
@@ -56,7 +56,7 @@ public class GestionBatiment {
                 """;
 
         try (Connection connection = DatabaseManager.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
+                PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, batiment.getNom());
             statement.setString(2, batiment.getAdresse());
             statement.setInt(3, batiment.getEtages());
@@ -65,7 +65,7 @@ public class GestionBatiment {
             statement.executeUpdate();
             batiments.put(batiment.getId(), batiment);
         } catch (SQLException e) {
-            throw new IllegalStateException("Impossible de mettre a jour le batiment dans la base de donnees.", e);
+            throw new IllegalStateException("Impossible de modifier le batiment dans la base de donnees.", e);
         }
     }
 
@@ -73,7 +73,7 @@ public class GestionBatiment {
         String sql = "DELETE FROM batiments WHERE id = ?";
 
         try (Connection connection = DatabaseManager.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
+                PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, id);
             statement.executeUpdate();
             batiments.remove(id);
@@ -100,8 +100,8 @@ public class GestionBatiment {
                 """;
 
         try (Connection connection = DatabaseManager.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql);
-             ResultSet resultSet = statement.executeQuery()) {
+                PreparedStatement statement = connection.prepareStatement(sql);
+                ResultSet resultSet = statement.executeQuery()) {
 
             while (resultSet.next()) {
                 Batiment batiment = new Batiment(

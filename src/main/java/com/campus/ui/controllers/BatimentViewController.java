@@ -11,6 +11,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -50,7 +51,7 @@ public class BatimentViewController {
         root.getStyleClass().add("split-view");
 
         VBox listPanel = createListPanel();
-        VBox formPanel = createFormPanel();
+        ScrollPane formPanel = createFormPanel();
 
         HBox.setHgrow(listPanel, Priority.ALWAYS);
         root.getChildren().addAll(listPanel, formPanel);
@@ -88,7 +89,7 @@ public class BatimentViewController {
         return panel;
     }
 
-    private VBox createFormPanel() {
+    private ScrollPane createFormPanel() {
         VBox panel = new VBox(12);
         panel.getStyleClass().addAll("content-panel", "editor-panel");
         panel.setPrefWidth(360);
@@ -133,7 +134,13 @@ public class BatimentViewController {
                 new Label("Nombre d'étages"), etagesSpinner,
                 new Label("Description"), descriptionArea,
                 saveButton, cancelButton);
-        return panel;
+
+        ScrollPane scrollPane = new ScrollPane(panel);
+        scrollPane.getStyleClass().add("editor-scroll");
+        scrollPane.setFitToWidth(true);
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        return scrollPane;
     }
 
     private void setupTable() {

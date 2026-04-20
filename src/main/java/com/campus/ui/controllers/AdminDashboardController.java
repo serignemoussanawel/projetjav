@@ -47,7 +47,7 @@ public class AdminDashboardController {
         Scene scene = new Scene(root, 1360, 820);
         scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
         primaryStage.setScene(scene);
-        primaryStage.setTitle("Admin Dashboard - Campus Room Manager");
+        primaryStage.setTitle("Dashboard Admin");
         primaryStage.setMaximized(true);
         primaryStage.show();
     }
@@ -71,10 +71,15 @@ public class AdminDashboardController {
         VBox titleBox = new VBox(4);
         Label title = new Label("Tableau de bord administrateur");
         title.getStyleClass().add("dashboard-title");
+        titleBox.getChildren().add(title);
 
-        Label subtitle = new Label("Pilotez les espaces, les comptes et les affectations depuis une seule vue.");
-        subtitle.getStyleClass().add("header-info");
-        titleBox.getChildren().addAll(title, subtitle);
+        /*
+         * Label subtitle = new
+         * Label("Pilotez les espaces, les comptes et les affectations depuis une seule vue."
+         * );
+         * subtitle.getStyleClass().add("header-info");
+         * titleBox.getChildren().addAll(title, subtitle);
+         */
 
         Label userLabel = new Label("Connecté: " + currentUser.getNomComplet());
         userLabel.getStyleClass().add("header-info");
@@ -93,7 +98,9 @@ public class AdminDashboardController {
     private VBox createMenu() {
         VBox menu = new VBox(16);
         menu.getStyleClass().add("dashboard-menu");
-        menu.setPrefWidth(240);
+        menu.setPrefWidth(210);
+        menu.setMinWidth(210);
+        menu.setMaxWidth(210);
 
         Label menuTitle = new Label("Administration");
         menuTitle.getStyleClass().add("menu-title");
@@ -109,7 +116,8 @@ public class AdminDashboardController {
         Button utilisateursButton = createMenuButton("Utilisateurs", this::showUtilisateursView);
         Button statistiquesButton = createMenuButton("Statistiques", this::showStatistiques);
         menuButtons.getChildren().addAll(
-                dashboardButton, batimentsButton, chambresButton, etudiantsButton, utilisateursButton, statistiquesButton);
+                dashboardButton, batimentsButton, chambresButton, etudiantsButton, utilisateursButton,
+                statistiquesButton);
         menuButtons.getStyleClass().add("menu-button-list");
         setActiveMenuButton(dashboardButton);
 
@@ -142,14 +150,19 @@ public class AdminDashboardController {
 
         HBox stats = new HBox(18);
         stats.getChildren().addAll(
-                createStatCard("Bâtiments", String.valueOf(gestionBatiment.getAllBatiments().size()), "Sites configurés"),
+                createStatCard("Bâtiments", String.valueOf(gestionBatiment.getAllBatiments().size()),
+                        "Sites configurés"),
                 createStatCard("Chambres", String.valueOf(gestionChambre.getAllChambres().size()), "Capacité totale"),
-                createStatCard("Étudiants", String.valueOf(gestionEtudiant.getAllEtudiants().size()), "Profils suivis"));
+                createStatCard("Étudiants", String.valueOf(gestionEtudiant.getAllEtudiants().size()),
+                        "Profils suivis"));
 
         HBox quickActions = new HBox(16,
-                createQuickActionCard("Gérer les bâtiments", "Ajouter, modifier ou organiser les résidences.", this::showBatimentsView),
-                createQuickActionCard("Suivre les chambres", "Contrôler l'état et la disponibilité en temps réel.", this::showChambresView),
-                createQuickActionCard("Administrer les comptes", "Activer, modifier ou désactiver les accès.", this::showUtilisateursView));
+                createQuickActionCard("Gérer les bâtiments", "Ajouter, modifier ou organiser les résidences.",
+                        this::showBatimentsView),
+                createQuickActionCard("Suivre les chambres", "Contrôler l'état et la disponibilité en temps réel.",
+                        this::showChambresView),
+                createQuickActionCard("Administrer les comptes", "Activer, modifier ou désactiver les accès.",
+                        this::showUtilisateursView));
         quickActions.getStyleClass().add("quick-actions-row");
 
         content.getChildren().addAll(title, intro, stats, quickActions);
@@ -261,6 +274,6 @@ public class AdminDashboardController {
         scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
 
         primaryStage.setScene(scene);
-        primaryStage.setTitle("Campus Room Manager - Login");
+        // primaryStage.setTitle("Campus Room Manager - Login");
     }
 }

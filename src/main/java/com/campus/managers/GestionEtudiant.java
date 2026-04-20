@@ -35,7 +35,7 @@ public class GestionEtudiant {
                 """;
 
         try (Connection connection = DatabaseManager.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
+                PreparedStatement statement = connection.prepareStatement(sql)) {
             DatabaseManager.bindEtudiant(statement, etudiant);
             statement.executeUpdate();
             etudiants.put(etudiant.getId(), etudiant);
@@ -63,7 +63,7 @@ public class GestionEtudiant {
                 """;
 
         try (Connection connection = DatabaseManager.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
+                PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, etudiant.getNom());
             statement.setString(2, etudiant.getPrenom());
             statement.setString(3, etudiant.getEmail());
@@ -76,7 +76,7 @@ public class GestionEtudiant {
             statement.executeUpdate();
             etudiants.put(etudiant.getId(), etudiant);
         } catch (SQLException e) {
-            throw new IllegalStateException("Impossible de mettre a jour l'etudiant dans la base de donnees.", e);
+            throw new IllegalStateException("Impossible de modifier l'etudiant dans la base de donnees.", e);
         }
     }
 
@@ -84,7 +84,7 @@ public class GestionEtudiant {
         String sql = "DELETE FROM etudiants WHERE id = ?";
 
         try (Connection connection = DatabaseManager.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
+                PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, id);
             statement.executeUpdate();
             etudiants.remove(id);
@@ -155,8 +155,8 @@ public class GestionEtudiant {
                 """;
 
         try (Connection connection = DatabaseManager.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql);
-             ResultSet resultSet = statement.executeQuery()) {
+                PreparedStatement statement = connection.prepareStatement(sql);
+                ResultSet resultSet = statement.executeQuery()) {
 
             while (resultSet.next()) {
                 Etudiant etudiant = new Etudiant(
