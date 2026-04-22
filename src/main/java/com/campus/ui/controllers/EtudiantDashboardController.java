@@ -172,7 +172,7 @@ public class EtudiantDashboardController {
             Chambre chambre = gestionChambre.getChambre(etudiant.getChambreId());
             if (chambre != null) {
                 roomCard.getChildren().addAll(
-                        profileRow("Code", chambre.getCode()),
+                        profileRow("Chambre", String.valueOf(chambre.getNumero())),
                         profileRow("Type", chambre.getType()),
                         profileRow("Capacité", chambre.getCapacite() + " personne(s)"),
                         profileRow("Bâtiment", gestionBatiment.getBatiment(chambre.getBatimentId()).getNom()),

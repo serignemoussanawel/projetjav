@@ -24,12 +24,13 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import java.util.List;
+
 public class ChambreViewController {
     private final GestionBatiment gestionBatiment;
     private final GestionChambre gestionChambre;
     private TableView<Chambre> tableView;
     private TextField idField;
-    private TextField codeField;
     private Spinner<Integer> numeroSpinner;
     private ComboBox<Batiment> batimentCombo;
     private Spinner<Integer> etageSpinner;
@@ -107,7 +108,6 @@ public class ChambreViewController {
         subtitle.setWrapText(true);
 
         idField = new TextField();
-        codeField = new TextField();
         numeroSpinner = new Spinner<>(1, 999, 1);
         batimentCombo = new ComboBox<>(FXCollections.observableArrayList(gestionBatiment.getAllBatiments()));
         batimentCombo.setMaxWidth(Double.MAX_VALUE);
@@ -131,7 +131,6 @@ public class ChambreViewController {
         panel.getChildren().addAll(
                 title, subtitle,
                 new Label("Identifiant"), idField,
-                new Label("Code"), codeField,
                 new Label("Numéro"), numeroSpinner,
                 new Label("Bâtiment"), batimentCombo,
                 new Label("Étage"), etageSpinner,
@@ -149,9 +148,6 @@ public class ChambreViewController {
     }
 
     private void setupTable() {
-        TableColumn<Chambre, String> codeCol = new TableColumn<>("Code");
-        codeCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getCode()));
-
         TableColumn<Chambre, String> batimentCol = new TableColumn<>("Bâtiment");
         batimentCol.setCellValueFactory(cell -> {
             Batiment batiment = gestionBatiment.getBatiment(cell.getValue().getBatimentId());
@@ -167,7 +163,7 @@ public class ChambreViewController {
         TableColumn<Chambre, String> etatCol = new TableColumn<>("État");
         etatCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getEtat()));
 
-        tableView.getColumns().setAll(codeCol, batimentCol, etageCol, typeCol, etatCol);
+        tableView.getColumns().setAll(List.of(batimentCol, etageCol, typeCol, etatCol));
         tableView.getSelectionModel().selectedItemProperty().addListener((obs, oldValue, newValue) -> populateForm(newValue));
     }
 
@@ -178,7 +174,6 @@ public class ChambreViewController {
         }
         idField.setText(chambre.getId());
         idField.setDisable(true);
-        codeField.setText(chambre.getCode());
         numeroSpinner.getValueFactory().setValue(chambre.getNumero());
         batimentCombo.setValue(gestionBatiment.getBatiment(chambre.getBatimentId()));
         etageSpinner.getValueFactory().setValue(chambre.getEtage());
@@ -189,7 +184,7 @@ public class ChambreViewController {
     }
 
     private void saveChambre() {
-        if (idField.getText().isBlank() || codeField.getText().isBlank() || batimentCombo.getValue() == null
+        if (idField.getText().isBlank() || batimentCombo.getValue() == null
                 || typeCombo.getValue() == null || etatCombo.getValue() == null) {
             showAlert("Erreur", "Veuillez remplir tous les champs obligatoires.");
             return;
@@ -198,7 +193,6 @@ public class ChambreViewController {
         if (selectedChambre == null) {
             Chambre chambre = new Chambre(
                     idField.getText().trim(),
-                    codeField.getText().trim(),
                     numeroSpinner.getValue(),
                     batimentCombo.getValue().getId(),
                     etageSpinner.getValue(),
@@ -207,7 +201,6 @@ public class ChambreViewController {
             chambre.setEtat(etatCombo.getValue());
             gestionChambre.addChambre(chambre);
         } else {
-            selectedChambre.setCode(codeField.getText().trim());
             selectedChambre.setNumero(numeroSpinner.getValue());
             selectedChambre.setBatimentId(batimentCombo.getValue().getId());
             selectedChambre.setEtage(etageSpinner.getValue());
@@ -231,7 +224,6 @@ public class ChambreViewController {
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setTitle("Confirmation");
         confirm.setHeaderText("Supprimer la chambre ?");
-        confirm.setContentText(selected.getCode());
         if (confirm.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
             gestionChambre.deleteChambre(selected.getId());
             refreshTable();
@@ -248,7 +240,6 @@ public class ChambreViewController {
         selectedChambre = null;
         idField.clear();
         idField.setDisable(false);
-        codeField.clear();
         numeroSpinner.getValueFactory().setValue(1);
         batimentCombo.setValue(null);
         etageSpinner.getValueFactory().setValue(1);

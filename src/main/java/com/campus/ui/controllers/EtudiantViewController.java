@@ -23,6 +23,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public class EtudiantViewController {
     private final GestionEtudiant gestionEtudiant;
@@ -165,10 +166,10 @@ public class EtudiantViewController {
                 return new SimpleStringProperty("Non affectée");
             }
             Chambre chambre = gestionChambre.getChambre(etudiant.getChambreId());
-            return new SimpleStringProperty(chambre != null ? chambre.getCode() : "N/A");
+            return new SimpleStringProperty(chambre != null ? String.valueOf(chambre.getNumero()) : "N/A");
         });
 
-        tableView.getColumns().setAll(nomCol, emailCol, matriculeCol, chambreCol);
+        tableView.getColumns().setAll(List.of(nomCol, emailCol, matriculeCol, chambreCol));
         tableView.getSelectionModel().selectedItemProperty().addListener((obs, oldValue, newValue) -> populateForm(newValue));
     }
 

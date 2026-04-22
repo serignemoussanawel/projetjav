@@ -22,6 +22,8 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import java.util.List;
+
 public class UtilisateurViewController {
     private final GestionUtilisateur gestionUtilisateur;
     private TableView<Utilisateur> tableView;
@@ -164,7 +166,7 @@ public class UtilisateurViewController {
         TableColumn<Utilisateur, String> actifCol = new TableColumn<>("Statut");
         actifCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().isActif() ? "Actif" : "Inactif"));
 
-        tableView.getColumns().setAll(nomCol, emailCol, roleCol, actifCol);
+        tableView.getColumns().setAll(List.of(nomCol, emailCol, roleCol, actifCol));
         tableView.getSelectionModel().selectedItemProperty().addListener((obs, oldValue, newValue) -> populateForm(newValue));
     }
 

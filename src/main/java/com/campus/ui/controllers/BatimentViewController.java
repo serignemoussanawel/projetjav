@@ -22,6 +22,8 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import java.util.List;
+
 public class BatimentViewController {
     private final GestionBatiment gestionBatiment;
     private TableView<Batiment> tableView;
@@ -156,7 +158,7 @@ public class BatimentViewController {
         TableColumn<Batiment, Integer> etagesCol = new TableColumn<>("Étages");
         etagesCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getEtages()));
 
-        tableView.getColumns().setAll(idCol, nomCol, adresseCol, etagesCol);
+        tableView.getColumns().setAll(List.of(idCol, nomCol, adresseCol, etagesCol));
         tableView.getSelectionModel().selectedItemProperty().addListener((obs, oldValue, newValue) -> populateForm(newValue));
     }
 

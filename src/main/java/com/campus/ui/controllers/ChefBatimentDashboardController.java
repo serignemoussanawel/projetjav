@@ -336,8 +336,8 @@ public class ChefBatimentDashboardController {
         TableView<Chambre> table = new TableView<>();
         table.getStyleClass().add("dashboard-table");
 
-        TableColumn<Chambre, String> codeCol = new TableColumn<>("Code");
-        codeCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getCode()));
+        TableColumn<Chambre, Integer> numeroCol = new TableColumn<>("Numéro");
+        numeroCol.setCellValueFactory(c -> new SimpleObjectProperty<>(c.getValue().getNumero()));
         TableColumn<Chambre, String> typeCol = new TableColumn<>("Type");
         typeCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getType()));
         TableColumn<Chambre, String> statutCol = new TableColumn<>("Disponibilité");
@@ -347,7 +347,7 @@ public class ChefBatimentDashboardController {
         long libres = chambres.stream().filter(Chambre::isLibre).count();
         long occupees = chambres.size() - libres;
 
-        table.getColumns().setAll(codeCol, typeCol, statutCol);
+        table.getColumns().setAll(List.of(numeroCol, typeCol, statutCol));
         table.setItems(FXCollections.observableArrayList(chambres));
 
         VBox content = buildTablePanel("Disponibilité des chambres",
@@ -368,8 +368,6 @@ public class ChefBatimentDashboardController {
     }
 
     private void setupChambresTable() {
-        TableColumn<Chambre, String> codeCol = new TableColumn<>("Code");
-        codeCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getCode()));
         TableColumn<Chambre, Integer> numeroCol = new TableColumn<>("Numéro");
         numeroCol.setCellValueFactory(c -> new SimpleObjectProperty<>(c.getValue().getNumero()));
         TableColumn<Chambre, Integer> etageCol = new TableColumn<>("Étage");
@@ -379,7 +377,7 @@ public class ChefBatimentDashboardController {
         TableColumn<Chambre, String> etatCol = new TableColumn<>("État");
         etatCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getEtat()));
 
-        chambresTable.getColumns().setAll(codeCol, numeroCol, etageCol, typeCol, etatCol);
+        chambresTable.getColumns().setAll(List.of(numeroCol, etageCol, typeCol, etatCol));
         chambresTable.getSelectionModel().selectedItemProperty().addListener((obs, oldValue, newValue) -> populateChambreForm(newValue));
     }
 
@@ -391,10 +389,10 @@ public class ChefBatimentDashboardController {
         TableColumn<Etudiant, String> chambreCol = new TableColumn<>("Chambre");
         chambreCol.setCellValueFactory(c -> {
             Chambre chambre = c.getValue().hasRoom() ? gestionChambre.getChambre(c.getValue().getChambreId()) : null;
-            return new SimpleStringProperty(chambre != null ? chambre.getCode() : "Non affecté");
+            return new SimpleStringProperty(chambre != null ? String.valueOf(chambre.getNumero()) : "Non affecté");
         });
 
-        affectationTable.getColumns().setAll(nomCol, matriculeCol, chambreCol);
+        affectationTable.getColumns().setAll(List.of(nomCol, matriculeCol, chambreCol));
     }
 
     private void populateChambreForm(Chambre chambre) {
@@ -417,13 +415,9 @@ public class ChefBatimentDashboardController {
             return;
         }
 
-        String code = batimentId.toUpperCase() + "-" + chambreEtageSpinner.getValue()
-                + String.format("%02d", chambreNumeroSpinner.getValue());
-
         if (selectedChambre == null) {
             Chambre chambre = new Chambre(
                     chambreIdField.getText().trim(),
-                    code,
                     chambreNumeroSpinner.getValue(),
                     batimentId,
                     chambreEtageSpinner.getValue(),
@@ -431,7 +425,6 @@ public class ChefBatimentDashboardController {
                     chambreTypeCombo.getValue());
             gestionChambre.addChambre(chambre);
         } else {
-            selectedChambre.setCode(code);
             selectedChambre.setNumero(chambreNumeroSpinner.getValue());
             selectedChambre.setBatimentId(batimentId);
             selectedChambre.setEtage(chambreEtageSpinner.getValue());
@@ -464,7 +457,7 @@ public class ChefBatimentDashboardController {
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setTitle("Confirmation");
         confirm.setHeaderText("Supprimer la chambre ?");
-        confirm.setContentText(selected.getCode());
+        confirm.setContentText("Chambre " + selected.getNumero());
         if (confirm.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
             gestionChambre.deleteChambre(selected.getId());
             refreshChambresTable();

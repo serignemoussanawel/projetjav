@@ -2,7 +2,6 @@ package com.campus.models;
 
 public class Chambre {
     private String id;
-    private String code;
     private int numero;
     private String batimentId;
     private int etage;
@@ -11,10 +10,9 @@ public class Chambre {
     private String etudiantId; // ID de l'étudiant occupant
     private String type; // "Simple", "Double", "Suite"
 
-    public Chambre(String id, String code, int numero, String batimentId, 
+    public Chambre(String id, int numero, String batimentId,
                   int etage, int capacite, String type) {
         this.id = id;
-        this.code = code;
         this.numero = numero;
         this.batimentId = batimentId;
         this.etage = etage;
@@ -27,9 +25,6 @@ public class Chambre {
     // Getters and Setters
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
-
-    public String getCode() { return code; }
-    public void setCode(String code) { this.code = code; }
 
     public int getNumero() { return numero; }
     public void setNumero(int numero) { this.numero = numero; }
@@ -76,7 +71,7 @@ public class Chambre {
 
     @Override
     public String toString() {
-        return code + " - " + type + " (" + etat + ")";
+        return "Chambre " + numero + " - " + type + " (" + etat + ")";
     }
 
     @Override

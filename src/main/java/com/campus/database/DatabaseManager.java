@@ -43,6 +43,7 @@ public final class DatabaseManager {
         createUtilisateursTable();
         createBatimentsTable();
         createChambresTable();
+        dropLegacyChambreCodeColumn();
         createEtudiantsTable();
         synchronizeEtudiantsFromUtilisateurs();
     }
@@ -88,7 +89,6 @@ public final class DatabaseManager {
         String sql = """
                 CREATE TABLE IF NOT EXISTS chambres (
                     id VARCHAR(50) PRIMARY KEY,
-                    code VARCHAR(50) NOT NULL UNIQUE,
                     numero INT NOT NULL,
                     batiment_id VARCHAR(50) NOT NULL,
                     etage INT NOT NULL,
@@ -102,6 +102,26 @@ public final class DatabaseManager {
         try (Connection connection = getConnection();
                 Statement statement = connection.createStatement()) {
             statement.execute(sql);
+        }
+    }
+
+    private static void dropLegacyChambreCodeColumn() throws SQLException {
+        String checkSql = """
+                SELECT COUNT(*) AS total
+                FROM information_schema.columns
+                WHERE table_schema = DATABASE()
+                  AND table_name = 'chambres'
+                  AND column_name = 'code'
+                """;
+
+        try (Connection connection = getConnection();
+                PreparedStatement checkStatement = connection.prepareStatement(checkSql);
+                ResultSet resultSet = checkStatement.executeQuery()) {
+            if (resultSet.next() && resultSet.getInt("total") > 0) {
+                try (Statement alterStatement = connection.createStatement()) {
+                    alterStatement.execute("ALTER TABLE chambres DROP COLUMN code");
+                }
+            }
         }
     }
 
@@ -196,14 +216,13 @@ public final class DatabaseManager {
 
     public static void bindChambre(PreparedStatement statement, Chambre chambre) throws SQLException {
         statement.setString(1, chambre.getId());
-        statement.setString(2, chambre.getCode());
-        statement.setInt(3, chambre.getNumero());
-        statement.setString(4, chambre.getBatimentId());
-        statement.setInt(5, chambre.getEtage());
-        statement.setInt(6, chambre.getCapacite());
-        statement.setString(7, chambre.getEtat());
-        statement.setString(8, chambre.getEtudiantId());
-        statement.setString(9, chambre.getType());
+        statement.setInt(2, chambre.getNumero());
+        statement.setString(3, chambre.getBatimentId());
+        statement.setInt(4, chambre.getEtage());
+        statement.setInt(5, chambre.getCapacite());
+        statement.setString(6, chambre.getEtat());
+        statement.setString(7, chambre.getEtudiantId());
+        statement.setString(8, chambre.getType());
     }
 
     public static void bindEtudiant(PreparedStatement statement, Etudiant etudiant) throws SQLException {

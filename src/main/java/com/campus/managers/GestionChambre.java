@@ -23,8 +23,8 @@ public class GestionChambre {
 
     public void addChambre(Chambre chambre) {
         String sql = """
-                INSERT INTO chambres (id, code, numero, batiment_id, etage, capacite, etat, etudiant_id, type)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO chambres (id, numero, batiment_id, etage, capacite, etat, etudiant_id, type)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """;
 
         try (Connection connection = DatabaseManager.getConnection();
@@ -41,31 +41,23 @@ public class GestionChambre {
         return chambres.get(id);
     }
 
-    public Chambre getChambreByCode(String code) {
-        return chambres.values().stream()
-                .filter(c -> c.getCode().equals(code))
-                .findFirst()
-                .orElse(null);
-    }
-
     public void updateChambre(Chambre chambre) {
         String sql = """
                 UPDATE chambres
-                SET code = ?, numero = ?, batiment_id = ?, etage = ?, capacite = ?, etat = ?, etudiant_id = ?, type = ?
+                SET numero = ?, batiment_id = ?, etage = ?, capacite = ?, etat = ?, etudiant_id = ?, type = ?
                 WHERE id = ?
                 """;
 
         try (Connection connection = DatabaseManager.getConnection();
                 PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setString(1, chambre.getCode());
-            statement.setInt(2, chambre.getNumero());
-            statement.setString(3, chambre.getBatimentId());
-            statement.setInt(4, chambre.getEtage());
-            statement.setInt(5, chambre.getCapacite());
-            statement.setString(6, chambre.getEtat());
-            statement.setString(7, chambre.getEtudiantId());
-            statement.setString(8, chambre.getType());
-            statement.setString(9, chambre.getId());
+            statement.setInt(1, chambre.getNumero());
+            statement.setString(2, chambre.getBatimentId());
+            statement.setInt(3, chambre.getEtage());
+            statement.setInt(4, chambre.getCapacite());
+            statement.setString(5, chambre.getEtat());
+            statement.setString(6, chambre.getEtudiantId());
+            statement.setString(7, chambre.getType());
+            statement.setString(8, chambre.getId());
             statement.executeUpdate();
             chambres.put(chambre.getId(), chambre);
         } catch (SQLException e) {
@@ -146,27 +138,19 @@ public class GestionChambre {
 
     public Chambre creerChambre(String batimentId, int etage, int capacite, String type) {
         int numero = getNextNumero(batimentId, etage);
-        String code = generateCode(batimentId, etage, numero);
-
         String id = "C" + nextId++;
 
-        Chambre chambre = new Chambre(id, code, numero, batimentId, etage, capacite, type);
+        Chambre chambre = new Chambre(id, numero, batimentId, etage, capacite, type);
         addChambre(chambre);
 
         return chambre;
-    }
-
-    public String generateCode(String batimentId, int etage, int numero) {
-        return batimentId.toUpperCase() + "-"
-                + etage
-                + String.format("%02d", numero);
     }
 
     private void chargerDepuisLaBase() {
         chambres.clear();
 
         String sql = """
-                SELECT id, code, numero, batiment_id, etage, capacite, etat, etudiant_id, type
+                SELECT id, numero, batiment_id, etage, capacite, etat, etudiant_id, type
                 FROM chambres
                 ORDER BY batiment_id, etage, numero
                 """;
@@ -178,7 +162,6 @@ public class GestionChambre {
             while (resultSet.next()) {
                 Chambre chambre = new Chambre(
                         resultSet.getString("id"),
-                        resultSet.getString("code"),
                         resultSet.getInt("numero"),
                         resultSet.getString("batiment_id"),
                         resultSet.getInt("etage"),
