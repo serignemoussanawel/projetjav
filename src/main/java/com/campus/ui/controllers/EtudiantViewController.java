@@ -191,7 +191,7 @@ public class EtudiantViewController {
         } else {
             chambreCombo.setValue(null);
         }
-        saveButton.setText("Mettre à jour");
+        saveButton.setText("Modifier");
     }
 
     private void saveEtudiant() {

@@ -182,7 +182,7 @@ public class UtilisateurViewController {
         emailField.setText(utilisateur.getEmail());
         passwordField.setText(utilisateur.getMotDePasse());
         roleCombo.setValue(utilisateur.getRole());
-        saveButton.setText("Mettre à jour");
+        saveButton.setText("Modifier");
     }
 
     private void saveUtilisateur() {

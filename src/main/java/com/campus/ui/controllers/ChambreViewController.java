@@ -180,7 +180,7 @@ public class ChambreViewController {
         capaciteSpinner.getValueFactory().setValue(chambre.getCapacite());
         typeCombo.setValue(chambre.getType());
         etatCombo.setValue(chambre.getEtat());
-        saveButton.setText("Mettre à jour");
+        saveButton.setText("Modifier");
     }
 
     private void saveChambre() {

@@ -173,7 +173,7 @@ public class BatimentViewController {
         adresseField.setText(batiment.getAdresse());
         etagesSpinner.getValueFactory().setValue(batiment.getEtages());
         descriptionArea.setText(batiment.getDescription());
-        saveButton.setText("Mettre à jour");
+        saveButton.setText("Modifier");
     }
 
     private void saveBatiment() {
