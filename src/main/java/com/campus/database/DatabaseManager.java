@@ -45,6 +45,7 @@ public final class DatabaseManager {
         createChambresTable();
         dropLegacyChambreCodeColumn();
         createEtudiantsTable();
+        migrateEtudiantsMatriculeToCodePermanent();
         synchronizeEtudiantsFromUtilisateurs();
     }
 
@@ -132,7 +133,7 @@ public final class DatabaseManager {
                     nom VARCHAR(100) NOT NULL,
                     prenom VARCHAR(100) NOT NULL,
                     email VARCHAR(150) NOT NULL UNIQUE,
-                    numero_matricule VARCHAR(100) NOT NULL UNIQUE,
+                    code_permanent VARCHAR(100) NOT NULL UNIQUE,
                     specialite VARCHAR(150) NOT NULL,
                     chambre_id VARCHAR(50) NULL,
                     date_affectation VARCHAR(50) NULL,
@@ -143,6 +144,41 @@ public final class DatabaseManager {
         try (Connection connection = getConnection();
                 Statement statement = connection.createStatement()) {
             statement.execute(sql);
+        }
+    }
+
+    private static void migrateEtudiantsMatriculeToCodePermanent() throws SQLException {
+        String checkOldColumnSql = """
+                SELECT COUNT(*) AS total
+                FROM information_schema.columns
+                WHERE table_schema = DATABASE()
+                  AND table_name = 'etudiants'
+                  AND column_name = 'numero_matricule'
+                """;
+
+        String checkNewColumnSql = """
+                SELECT COUNT(*) AS total
+                FROM information_schema.columns
+                WHERE table_schema = DATABASE()
+                  AND table_name = 'etudiants'
+                  AND column_name = 'code_permanent'
+                """;
+
+        try (Connection connection = getConnection();
+                PreparedStatement oldColumnStatement = connection.prepareStatement(checkOldColumnSql);
+                PreparedStatement newColumnStatement = connection.prepareStatement(checkNewColumnSql);
+                ResultSet oldResult = oldColumnStatement.executeQuery();
+                ResultSet newResult = newColumnStatement.executeQuery()) {
+
+            boolean hasOldColumn = oldResult.next() && oldResult.getInt("total") > 0;
+            boolean hasNewColumn = newResult.next() && newResult.getInt("total") > 0;
+
+            if (hasOldColumn && !hasNewColumn) {
+                try (Statement alterStatement = connection.createStatement()) {
+                    alterStatement.execute(
+                            "ALTER TABLE etudiants CHANGE numero_matricule code_permanent VARCHAR(100) NOT NULL UNIQUE");
+                }
+            }
         }
     }
 
@@ -181,7 +217,7 @@ public final class DatabaseManager {
         }
 
         String insertSql = """
-                INSERT INTO etudiants (id, nom, prenom, email, numero_matricule, specialite, chambre_id, date_affectation, actif)
+                INSERT INTO etudiants (id, nom, prenom, email, code_permanent, specialite, chambre_id, date_affectation, actif)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
 
@@ -230,7 +266,7 @@ public final class DatabaseManager {
         statement.setString(2, etudiant.getNom());
         statement.setString(3, etudiant.getPrenom());
         statement.setString(4, etudiant.getEmail());
-        statement.setString(5, etudiant.getNumeroMatricule());
+        statement.setString(5, etudiant.getCodePermanent());
         statement.setString(6, etudiant.getSpecialite());
         statement.setString(7, etudiant.getChambreId());
         statement.setString(8, etudiant.getDateAffectation());

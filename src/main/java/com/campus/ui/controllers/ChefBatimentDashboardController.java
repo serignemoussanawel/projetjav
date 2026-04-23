@@ -77,7 +77,7 @@ public class ChefBatimentDashboardController {
         Scene scene = new Scene(root, 1320, 800);
         scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
         primaryStage.setScene(scene);
-        primaryStage.setTitle("Chef de Bâtiment Dashboard - Campus Room Manager");
+        primaryStage.setTitle("Dashboard Chef de Bâtiment ");
         primaryStage.setMaximized(true);
         primaryStage.show();
     }
@@ -378,21 +378,22 @@ public class ChefBatimentDashboardController {
         etatCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getEtat()));
 
         chambresTable.getColumns().setAll(List.of(numeroCol, etageCol, typeCol, etatCol));
-        chambresTable.getSelectionModel().selectedItemProperty().addListener((obs, oldValue, newValue) -> populateChambreForm(newValue));
+        chambresTable.getSelectionModel().selectedItemProperty()
+                .addListener((obs, oldValue, newValue) -> populateChambreForm(newValue));
     }
 
     private void setupAffectationTable() {
         TableColumn<Etudiant, String> nomCol = new TableColumn<>("Étudiant");
         nomCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getNomComplet()));
-        TableColumn<Etudiant, String> matriculeCol = new TableColumn<>("Matricule");
-        matriculeCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getNumeroMatricule()));
+        TableColumn<Etudiant, String> codePermanentCol = new TableColumn<>("Code permanent");
+        codePermanentCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getCodePermanent()));
         TableColumn<Etudiant, String> chambreCol = new TableColumn<>("Chambre");
         chambreCol.setCellValueFactory(c -> {
             Chambre chambre = c.getValue().hasRoom() ? gestionChambre.getChambre(c.getValue().getChambreId()) : null;
             return new SimpleStringProperty(chambre != null ? String.valueOf(chambre.getNumero()) : "Non affecté");
         });
 
-        affectationTable.getColumns().setAll(List.of(nomCol, matriculeCol, chambreCol));
+        affectationTable.getColumns().setAll(List.of(nomCol, codePermanentCol, chambreCol));
     }
 
     private void populateChambreForm(Chambre chambre) {

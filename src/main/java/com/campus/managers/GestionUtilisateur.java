@@ -45,6 +45,8 @@ public class GestionUtilisateur {
     }
 
     public void addUtilisateur(Utilisateur utilisateur) {
+        validateChefBatimentAssignment(utilisateur);
+
         String sql = """
                 INSERT INTO utilisateurs (id, nom, prenom, email, mot_de_passe, role, batiment_id, actif)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -65,6 +67,8 @@ public class GestionUtilisateur {
     }
 
     public void updateUtilisateur(Utilisateur utilisateur) {
+        validateChefBatimentAssignment(utilisateur);
+
         String sql = """
                 UPDATE utilisateurs
                 SET nom = ?, prenom = ?, email = ?, mot_de_passe = ?, role = ?, batiment_id = ?, actif = ?
@@ -160,6 +164,21 @@ public class GestionUtilisateur {
                 .filter(u -> u.getRole() == UserRole.CHEF_BATIMENT && batimentId.equals(u.getBatimentId()))
                 .findFirst()
                 .orElse(null);
+    }
+
+    private void validateChefBatimentAssignment(Utilisateur utilisateur) {
+        if (utilisateur.getRole() != UserRole.CHEF_BATIMENT) {
+            return;
+        }
+
+        if (utilisateur.getBatimentId() == null || utilisateur.getBatimentId().isBlank()) {
+            throw new IllegalArgumentException("Un chef de bâtiment doit être associé à un bâtiment.");
+        }
+
+        Utilisateur existingChef = getChefBatiment(utilisateur.getBatimentId());
+        if (existingChef != null && !existingChef.getId().equals(utilisateur.getId())) {
+            throw new IllegalArgumentException("Ce bâtiment a déjà un chef de bâtiment.");
+        }
     }
 
     private Utilisateur mapUtilisateur(ResultSet resultSet) throws SQLException {

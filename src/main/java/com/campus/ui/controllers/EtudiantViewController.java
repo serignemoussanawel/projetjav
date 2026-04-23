@@ -33,7 +33,7 @@ public class EtudiantViewController {
     private TextField nomField;
     private TextField prenomField;
     private TextField emailField;
-    private TextField matriculeField;
+    private TextField codePermanentField;
     private TextField specialiteField;
     private ComboBox<Chambre> chambreCombo;
     private Button saveButton;
@@ -114,7 +114,7 @@ public class EtudiantViewController {
         nomField = new TextField();
         prenomField = new TextField();
         emailField = new TextField();
-        matriculeField = new TextField();
+        codePermanentField = new TextField();
         specialiteField = new TextField();
         chambreCombo = new ComboBox<>();
         chambreCombo.setMaxWidth(Double.MAX_VALUE);
@@ -135,7 +135,7 @@ public class EtudiantViewController {
                 new Label("Nom"), nomField,
                 new Label("Prénom"), prenomField,
                 new Label("Email"), emailField,
-                new Label("Matricule"), matriculeField,
+                new Label("Code permanent"), codePermanentField,
                 new Label("Spécialité"), specialiteField,
                 new Label("Chambre"), chambreCombo,
                 saveButton, resetButton);
@@ -156,8 +156,8 @@ public class EtudiantViewController {
         TableColumn<Etudiant, String> emailCol = new TableColumn<>("Email");
         emailCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getEmail()));
 
-        TableColumn<Etudiant, String> matriculeCol = new TableColumn<>("Matricule");
-        matriculeCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getNumeroMatricule()));
+        TableColumn<Etudiant, String> codePermanentCol = new TableColumn<>("Code permanent");
+        codePermanentCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getCodePermanent()));
 
         TableColumn<Etudiant, String> chambreCol = new TableColumn<>("Chambre");
         chambreCol.setCellValueFactory(cell -> {
@@ -169,8 +169,9 @@ public class EtudiantViewController {
             return new SimpleStringProperty(chambre != null ? String.valueOf(chambre.getNumero()) : "N/A");
         });
 
-        tableView.getColumns().setAll(List.of(nomCol, emailCol, matriculeCol, chambreCol));
-        tableView.getSelectionModel().selectedItemProperty().addListener((obs, oldValue, newValue) -> populateForm(newValue));
+        tableView.getColumns().setAll(List.of(nomCol, emailCol, codePermanentCol, chambreCol));
+        tableView.getSelectionModel().selectedItemProperty()
+                .addListener((obs, oldValue, newValue) -> populateForm(newValue));
     }
 
     private void populateForm(Etudiant etudiant) {
@@ -183,7 +184,7 @@ public class EtudiantViewController {
         nomField.setText(etudiant.getNom());
         prenomField.setText(etudiant.getPrenom());
         emailField.setText(etudiant.getEmail());
-        matriculeField.setText(etudiant.getNumeroMatricule());
+        codePermanentField.setText(etudiant.getCodePermanent());
         specialiteField.setText(etudiant.getSpecialite());
         refreshChambreChoices(etudiant.getChambreId());
         if (etudiant.hasRoom()) {
@@ -196,7 +197,8 @@ public class EtudiantViewController {
 
     private void saveEtudiant() {
         if (idField.getText().isBlank() || nomField.getText().isBlank() || prenomField.getText().isBlank()
-                || emailField.getText().isBlank() || matriculeField.getText().isBlank() || specialiteField.getText().isBlank()) {
+                || emailField.getText().isBlank() || codePermanentField.getText().isBlank()
+                || specialiteField.getText().isBlank()) {
             showAlert("Erreur", "Veuillez remplir tous les champs.");
             return;
         }
@@ -207,7 +209,7 @@ public class EtudiantViewController {
                     nomField.getText().trim(),
                     prenomField.getText().trim(),
                     emailField.getText().trim(),
-                    matriculeField.getText().trim(),
+                    codePermanentField.getText().trim(),
                     specialiteField.getText().trim());
             gestionEtudiant.addEtudiant(etudiant);
             selectedEtudiant = etudiant;
@@ -215,7 +217,7 @@ public class EtudiantViewController {
             selectedEtudiant.setNom(nomField.getText().trim());
             selectedEtudiant.setPrenom(prenomField.getText().trim());
             selectedEtudiant.setEmail(emailField.getText().trim());
-            selectedEtudiant.setNumeroMatricule(matriculeField.getText().trim());
+            selectedEtudiant.setCodePermanent(codePermanentField.getText().trim());
             selectedEtudiant.setSpecialite(specialiteField.getText().trim());
             gestionEtudiant.updateEtudiant(selectedEtudiant);
         }
@@ -295,7 +297,7 @@ public class EtudiantViewController {
         nomField.clear();
         prenomField.clear();
         emailField.clear();
-        matriculeField.clear();
+        codePermanentField.clear();
         specialiteField.clear();
         chambreCombo.setValue(null);
         refreshChambreChoices(null);

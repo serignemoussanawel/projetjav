@@ -49,7 +49,7 @@ public class EtudiantDashboardController {
         Scene scene = new Scene(root, 1240, 760);
         scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
         primaryStage.setScene(scene);
-        primaryStage.setTitle("Espace Étudiant - Campus Room Manager");
+        primaryStage.setTitle("Espace Étudiant ");
         primaryStage.setMaximized(true);
         primaryStage.show();
     }
@@ -144,7 +144,7 @@ public class EtudiantDashboardController {
             infoCard.getChildren().addAll(
                     profileRow("Nom complet", etudiant.getNomComplet()),
                     profileRow("Email", etudiant.getEmail()),
-                    profileRow("Matricule", etudiant.getNumeroMatricule()),
+                    profileRow("Code permanent", etudiant.getCodePermanent()),
                     profileRow("Spécialité", etudiant.getSpecialite()));
         } else {
             infoCard.getChildren().add(new Label("Aucun profil étudiant correspondant n'a été trouvé."));

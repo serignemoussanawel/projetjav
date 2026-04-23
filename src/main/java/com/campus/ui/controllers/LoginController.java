@@ -18,6 +18,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Ellipse;
 import javafx.scene.shape.Polygon;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 public class LoginController {
@@ -61,6 +62,11 @@ public class LoginController {
             new AdminDashboardController(gestionUtilisateur, gestionBatiment, gestionChambre, gestionEtudiant,
                     primaryStage).show();
         } else if (user.getRole() == UserRole.CHEF_BATIMENT) {
+            if (user.getBatimentId() == null || gestionBatiment.getBatiment(user.getBatimentId()) == null) {
+                showErrorAlert("Compte incomplet",
+                        "Ce chef de bâtiment n'est associé à aucun bâtiment. Veuillez contacter l'administrateur.");
+                return;
+            }
             new ChefBatimentDashboardController(gestionUtilisateur, gestionBatiment, gestionChambre, gestionEtudiant,
                     primaryStage).show();
         } else {
@@ -96,7 +102,7 @@ public class LoginController {
         Label badge = new Label("Gestion intelligente du campus");
         badge.getStyleClass().add("login-badge");
 
-        Label title = new Label("Page d'accueil du système de gestion de résidence universitaire");
+        Label title = new Label("Page d'accueil du système");
         title.getStyleClass().add("login-hero-title");
         title.setWrapText(true);
 
@@ -272,5 +278,15 @@ public class LoginController {
         valueLabel.getStyleClass().add("login-highlight-value");
         card.getChildren().addAll(titleLabel, valueLabel);
         return card;
+    }
+
+    private void showErrorAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.initOwner(primaryStage);
+        alert.initModality(Modality.WINDOW_MODAL);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 }

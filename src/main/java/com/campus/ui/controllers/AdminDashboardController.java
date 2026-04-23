@@ -141,14 +141,19 @@ public class AdminDashboardController {
         VBox content = new VBox(22);
         content.getStyleClass().add("content-panel");
         content.setPadding(new Insets(26));
+        content.setFillWidth(true);
 
         Label title = new Label("Vue d'ensemble");
         title.getStyleClass().add("view-title");
 
         Label intro = new Label("Consultez les indicateurs clés et ouvrez rapidement les espaces de gestion.");
         intro.getStyleClass().add("panel-subtitle");
+        intro.setWrapText(true);
 
-        HBox stats = new HBox(18);
+        FlowPane stats = new FlowPane();
+        stats.setHgap(18);
+        stats.setVgap(18);
+        stats.setPrefWrapLength(900);
         stats.getChildren().addAll(
                 createStatCard("Bâtiments", String.valueOf(gestionBatiment.getAllBatiments().size()),
                         "Sites configurés"),
@@ -156,7 +161,11 @@ public class AdminDashboardController {
                 createStatCard("Étudiants", String.valueOf(gestionEtudiant.getAllEtudiants().size()),
                         "Profils suivis"));
 
-        HBox quickActions = new HBox(16,
+        FlowPane quickActions = new FlowPane();
+        quickActions.setHgap(16);
+        quickActions.setVgap(16);
+        quickActions.setPrefWrapLength(900);
+        quickActions.getChildren().addAll(
                 createQuickActionCard("Gérer les bâtiments", "Ajouter, modifier ou organiser les résidences.",
                         this::showBatimentsView),
                 createQuickActionCard("Suivre les chambres", "Contrôler l'état et la disponibilité en temps réel.",
@@ -173,6 +182,8 @@ public class AdminDashboardController {
         VBox card = new VBox(8);
         card.getStyleClass().add("stat-card");
         HBox.setHgrow(card, Priority.ALWAYS);
+        card.setPrefWidth(220);
+        card.setMinWidth(220);
 
         Label titleLabel = new Label(title);
         titleLabel.getStyleClass().add("stat-title");
@@ -213,6 +224,8 @@ public class AdminDashboardController {
         VBox card = new VBox(12);
         card.getStyleClass().add("admin-action-card");
         HBox.setHgrow(card, Priority.ALWAYS);
+        card.setPrefWidth(260);
+        card.setMinWidth(260);
 
         Label titleLabel = new Label(title);
         titleLabel.getStyleClass().add("admin-action-title");
@@ -260,10 +273,22 @@ public class AdminDashboardController {
     }
 
     private void setCenterContent(Node node) {
+        root.setCenter(wrapContent(node));
+    }
+
+    private ScrollPane wrapContent(Node node) {
         StackPane wrapper = new StackPane(node);
         wrapper.getStyleClass().add("admin-center-shell");
         StackPane.setMargin(node, new Insets(0));
-        root.setCenter(wrapper);
+
+        ScrollPane scrollPane = new ScrollPane(wrapper);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setFitToHeight(false);
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        scrollPane.setPannable(true);
+        scrollPane.getStyleClass().add("dashboard-scroll");
+        return scrollPane;
     }
 
     private void logout() {

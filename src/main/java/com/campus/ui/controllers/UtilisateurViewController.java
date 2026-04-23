@@ -1,6 +1,8 @@
 package com.campus.ui.controllers;
 
+import com.campus.managers.GestionBatiment;
 import com.campus.managers.GestionUtilisateur;
+import com.campus.models.Batiment;
 import com.campus.models.UserRole;
 import com.campus.models.Utilisateur;
 import javafx.beans.property.SimpleStringProperty;
@@ -26,6 +28,7 @@ import java.util.List;
 
 public class UtilisateurViewController {
     private final GestionUtilisateur gestionUtilisateur;
+    private final GestionBatiment gestionBatiment;
     private TableView<Utilisateur> tableView;
     private TextField idField;
     private TextField nomField;
@@ -33,11 +36,13 @@ public class UtilisateurViewController {
     private TextField emailField;
     private PasswordField passwordField;
     private ComboBox<UserRole> roleCombo;
+    private ComboBox<Batiment> batimentCombo;
     private Button saveButton;
     private Utilisateur selectedUtilisateur;
 
     public UtilisateurViewController(GestionUtilisateur gestionUtilisateur) {
         this.gestionUtilisateur = gestionUtilisateur;
+        this.gestionBatiment = new GestionBatiment();
     }
 
     public void show() {
@@ -124,6 +129,11 @@ public class UtilisateurViewController {
 
         roleCombo = new ComboBox<>(FXCollections.observableArrayList(UserRole.values()));
         roleCombo.setMaxWidth(Double.MAX_VALUE);
+        roleCombo.valueProperty().addListener((obs, oldValue, newValue) -> updateBatimentFieldState(newValue));
+
+        batimentCombo = new ComboBox<>(FXCollections.observableArrayList(gestionBatiment.getAllBatiments()));
+        batimentCombo.setMaxWidth(Double.MAX_VALUE);
+        batimentCombo.setPromptText("Sélectionner un bâtiment");
 
         saveButton = new Button("Enregistrer");
         saveButton.getStyleClass().add("primary-button");
@@ -143,6 +153,7 @@ public class UtilisateurViewController {
                 new Label("Email"), emailField,
                 new Label("Mot de passe"), passwordField,
                 new Label("Rôle"), roleCombo,
+                new Label("Bâtiment"), batimentCombo,
                 saveButton, resetButton);
 
         ScrollPane scrollPane = new ScrollPane(panel);
@@ -182,6 +193,8 @@ public class UtilisateurViewController {
         emailField.setText(utilisateur.getEmail());
         passwordField.setText(utilisateur.getMotDePasse());
         roleCombo.setValue(utilisateur.getRole());
+        batimentCombo.setValue(gestionBatiment.getBatiment(utilisateur.getBatimentId()));
+        updateBatimentFieldState(utilisateur.getRole());
         saveButton.setText("Modifier");
     }
 
@@ -192,22 +205,45 @@ public class UtilisateurViewController {
             return;
         }
 
+        if (roleCombo.getValue() == UserRole.CHEF_BATIMENT && batimentCombo.getValue() == null) {
+            showAlert("Erreur", "Veuillez associer un bâtiment au chef de bâtiment.");
+            return;
+        }
+
+        String batimentId = roleCombo.getValue() == UserRole.CHEF_BATIMENT
+                ? batimentCombo.getValue().getId()
+                : null;
+
+        Utilisateur utilisateurToSave;
         if (selectedUtilisateur == null) {
-            Utilisateur utilisateur = new Utilisateur(
+            utilisateurToSave = new Utilisateur(
                     idField.getText().trim(),
                     nomField.getText().trim(),
                     prenomField.getText().trim(),
                     emailField.getText().trim(),
                     passwordField.getText(),
                     roleCombo.getValue());
-            gestionUtilisateur.addUtilisateur(utilisateur);
         } else {
-            selectedUtilisateur.setNom(nomField.getText().trim());
-            selectedUtilisateur.setPrenom(prenomField.getText().trim());
-            selectedUtilisateur.setEmail(emailField.getText().trim());
-            selectedUtilisateur.setMotDePasse(passwordField.getText());
-            selectedUtilisateur.setRole(roleCombo.getValue());
-            gestionUtilisateur.updateUtilisateur(selectedUtilisateur);
+            utilisateurToSave = new Utilisateur(
+                    selectedUtilisateur.getId(),
+                    nomField.getText().trim(),
+                    prenomField.getText().trim(),
+                    emailField.getText().trim(),
+                    passwordField.getText(),
+                    roleCombo.getValue());
+            utilisateurToSave.setActif(selectedUtilisateur.isActif());
+        }
+        utilisateurToSave.setBatimentId(batimentId);
+
+        try {
+            if (selectedUtilisateur == null) {
+                gestionUtilisateur.addUtilisateur(utilisateurToSave);
+            } else {
+                gestionUtilisateur.updateUtilisateur(utilisateurToSave);
+            }
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            showAlert("Erreur", e.getMessage());
+            return;
         }
 
         refreshTable();
@@ -221,9 +257,14 @@ public class UtilisateurViewController {
             return;
         }
         selected.setActif(!selected.isActif());
-        gestionUtilisateur.updateUtilisateur(selected);
-        refreshTable();
-        populateForm(selected);
+        try {
+            gestionUtilisateur.updateUtilisateur(selected);
+            refreshTable();
+            populateForm(selected);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            selected.setActif(!selected.isActif());
+            showAlert("Erreur", e.getMessage());
+        }
     }
 
     private void deleteSelectedUtilisateur() {
@@ -258,9 +299,19 @@ public class UtilisateurViewController {
         emailField.clear();
         passwordField.clear();
         roleCombo.setValue(null);
+        batimentCombo.setValue(null);
+        updateBatimentFieldState(null);
         saveButton.setText("Enregistrer");
         if (tableView != null) {
             tableView.getSelectionModel().clearSelection();
+        }
+    }
+
+    private void updateBatimentFieldState(UserRole role) {
+        boolean isChefBatiment = role == UserRole.CHEF_BATIMENT;
+        batimentCombo.setDisable(!isChefBatiment);
+        if (!isChefBatiment) {
+            batimentCombo.setValue(null);
         }
     }
 

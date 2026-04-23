@@ -5,19 +5,19 @@ public class Etudiant {
     private String nom;
     private String prenom;
     private String email;
-    private String numeroMatricule;
+    private String codePermanent;
     private String specialite;
     private String chambreId; // ID de la chambre affectée
     private String dateAffectation;
     private boolean actif;
 
     public Etudiant(String id, String nom, String prenom, String email, 
-                   String numeroMatricule, String specialite) {
+                   String codePermanent, String specialite) {
         this.id = id;
         this.nom = nom;
         this.prenom = prenom;
         this.email = email;
-        this.numeroMatricule = numeroMatricule;
+        this.codePermanent = codePermanent;
         this.specialite = specialite;
         this.chambreId = null;
         this.dateAffectation = null;
@@ -37,8 +37,8 @@ public class Etudiant {
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
 
-    public String getNumeroMatricule() { return numeroMatricule; }
-    public void setNumeroMatricule(String numeroMatricule) { this.numeroMatricule = numeroMatricule; }
+    public String getCodePermanent() { return codePermanent; }
+    public void setCodePermanent(String codePermanent) { this.codePermanent = codePermanent; }
 
     public String getSpecialite() { return specialite; }
     public void setSpecialite(String specialite) { this.specialite = specialite; }
@@ -62,7 +62,7 @@ public class Etudiant {
 
     @Override
     public String toString() {
-        return getNomComplet() + " (" + numeroMatricule + ")";
+        return getNomComplet() + " (" + codePermanent + ")";
     }
 
     @Override

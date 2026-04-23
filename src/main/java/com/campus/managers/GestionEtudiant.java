@@ -21,16 +21,16 @@ public class GestionEtudiant {
         chargerDepuisLaBase();
     }
 
-    public Etudiant creerEtudiant(String nom, String prenom, String email, String numeroMatricule, String specialite) {
+    public Etudiant creerEtudiant(String nom, String prenom, String email, String codePermanent, String specialite) {
         String id = "E" + nextId++;
-        Etudiant etudiant = new Etudiant(id, nom, prenom, email, numeroMatricule, specialite);
+        Etudiant etudiant = new Etudiant(id, nom, prenom, email, codePermanent, specialite);
         addEtudiant(etudiant);
         return etudiant;
     }
 
     public void addEtudiant(Etudiant etudiant) {
         String sql = """
-                INSERT INTO etudiants (id, nom, prenom, email, numero_matricule, specialite, chambre_id, date_affectation, actif)
+                INSERT INTO etudiants (id, nom, prenom, email, code_permanent, specialite, chambre_id, date_affectation, actif)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
 
@@ -48,9 +48,9 @@ public class GestionEtudiant {
         return etudiants.get(id);
     }
 
-    public Etudiant getEtudiantByMatricule(String matricule) {
+    public Etudiant getEtudiantByCodePermanent(String codePermanent) {
         return etudiants.values().stream()
-                .filter(e -> e.getNumeroMatricule().equals(matricule))
+                .filter(e -> e.getCodePermanent().equals(codePermanent))
                 .findFirst()
                 .orElse(null);
     }
@@ -58,7 +58,7 @@ public class GestionEtudiant {
     public void updateEtudiant(Etudiant etudiant) {
         String sql = """
                 UPDATE etudiants
-                SET nom = ?, prenom = ?, email = ?, numero_matricule = ?, specialite = ?, chambre_id = ?, date_affectation = ?, actif = ?
+                SET nom = ?, prenom = ?, email = ?, code_permanent = ?, specialite = ?, chambre_id = ?, date_affectation = ?, actif = ?
                 WHERE id = ?
                 """;
 
@@ -67,7 +67,7 @@ public class GestionEtudiant {
             statement.setString(1, etudiant.getNom());
             statement.setString(2, etudiant.getPrenom());
             statement.setString(3, etudiant.getEmail());
-            statement.setString(4, etudiant.getNumeroMatricule());
+            statement.setString(4, etudiant.getCodePermanent());
             statement.setString(5, etudiant.getSpecialite());
             statement.setString(6, etudiant.getChambreId());
             statement.setString(7, etudiant.getDateAffectation());
@@ -149,7 +149,7 @@ public class GestionEtudiant {
         etudiants.clear();
 
         String sql = """
-                SELECT id, nom, prenom, email, numero_matricule, specialite, chambre_id, date_affectation, actif
+                SELECT id, nom, prenom, email, code_permanent, specialite, chambre_id, date_affectation, actif
                 FROM etudiants
                 ORDER BY prenom, nom
                 """;
@@ -164,7 +164,7 @@ public class GestionEtudiant {
                         resultSet.getString("nom"),
                         resultSet.getString("prenom"),
                         resultSet.getString("email"),
-                        resultSet.getString("numero_matricule"),
+                        resultSet.getString("code_permanent"),
                         resultSet.getString("specialite"));
                 etudiant.setChambreId(resultSet.getString("chambre_id"));
                 etudiant.setDateAffectation(resultSet.getString("date_affectation"));
