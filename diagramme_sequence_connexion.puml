@@ -1,0 +1,49 @@
+@startuml
+title Diagramme de séquence - Connexion utilisateur
+
+actor "Utilisateur" as User
+participant "LoginController" as Login
+participant "GestionUtilisateur" as GU
+participant "DatabaseManager / Base MySQL" as DB
+participant "GestionBatiment" as GB
+participant "AdminDashboardController" as AdminDash
+participant "ChefBatimentDashboardController" as ChefDash
+participant "EtudiantDashboardController" as EtuDash
+
+User -> Login : saisir email + mot de passe
+User -> Login : cliquer sur "Connexion"
+
+Login -> Login : handleLogin()
+
+alt Champs vides
+  Login -> User : afficher "Veuillez remplir tous les champs"
+else Champs valides
+  Login -> GU : authentifier(email, motDePasse)
+  GU -> DB : vérifier utilisateur actif\npar email + mot de passe
+  DB --> GU : utilisateur trouvé / null
+  GU --> Login : Utilisateur / null
+
+  alt Identifiants invalides
+    Login -> User : afficher "Identifiants invalides"
+  else Utilisateur authentifié
+    Login -> Login : loadMainWindow(user)
+    Login -> GB : getBatiment(user.batimentId)
+
+    alt Rôle = ADMIN
+      Login -> AdminDash : show()
+      AdminDash --> User : afficher tableau de bord admin
+    else Rôle = CHEF_BATIMENT
+      alt Bâtiment non associé
+        Login -> User : afficher erreur\n"Compte incomplet"
+      else Bâtiment valide
+        Login -> ChefDash : show()
+        ChefDash --> User : afficher tableau de bord chef bâtiment
+      end
+    else Rôle = ETUDIANT
+      Login -> EtuDash : show()
+      EtuDash --> User : afficher espace étudiant
+    end
+  end
+end
+
+@enduml

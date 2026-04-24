@@ -1,0 +1,95 @@
+@startuml
+top to bottom direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+package "Application" {
+  class "Main" as Main
+}
+
+package "UI / Contrôleurs" {
+  class "LoginController" as LoginController
+  class "AdminDashboardController" as AdminDashboardController
+  class "ChefBatimentDashboardController" as ChefBatimentDashboardController
+  class "EtudiantDashboardController" as EtudiantDashboardController
+  class "BatimentViewController" as BatimentViewController
+  class "ChambreViewController" as ChambreViewController
+  class "EtudiantViewController" as EtudiantViewController
+  class "UtilisateurViewController" as UtilisateurViewController
+  class "StatisticsViewController" as StatisticsViewController
+}
+
+package "Managers / Logique métier" {
+  class "GestionUtilisateur" as GestionUtilisateur
+  class "GestionBatiment" as GestionBatiment
+  class "GestionChambre" as GestionChambre
+  class "GestionEtudiant" as GestionEtudiant
+}
+
+package "Modèles" {
+  class "Utilisateur" as Utilisateur
+  class "Batiment" as Batiment
+  class "Chambre" as Chambre
+  class "Etudiant" as Etudiant
+  enum "UserRole" as UserRole
+}
+
+package "Accès aux données" {
+  class "DatabaseManager" as DatabaseManager
+  database "MySQL\nBase gestion_chambres" as MySQL
+}
+
+Main --> DatabaseManager : initialise
+Main --> GestionUtilisateur : crée
+Main --> LoginController : ouvre l'écran
+
+LoginController --> GestionUtilisateur : authentifier()
+LoginController --> GestionBatiment : vérifier bâtiment
+LoginController --> GestionChambre : charger
+LoginController --> GestionEtudiant : charger
+
+AdminDashboardController --> GestionUtilisateur
+AdminDashboardController --> GestionBatiment
+AdminDashboardController --> GestionChambre
+AdminDashboardController --> GestionEtudiant
+
+ChefBatimentDashboardController --> GestionUtilisateur
+ChefBatimentDashboardController --> GestionBatiment
+ChefBatimentDashboardController --> GestionChambre
+ChefBatimentDashboardController --> GestionEtudiant
+
+EtudiantDashboardController --> GestionUtilisateur
+EtudiantDashboardController --> GestionEtudiant
+EtudiantDashboardController --> GestionChambre
+EtudiantDashboardController --> GestionBatiment
+
+BatimentViewController --> GestionBatiment
+ChambreViewController --> GestionChambre
+ChambreViewController --> GestionBatiment
+EtudiantViewController --> GestionEtudiant
+EtudiantViewController --> GestionChambre
+UtilisateurViewController --> GestionUtilisateur
+UtilisateurViewController --> GestionBatiment
+StatisticsViewController --> GestionBatiment
+StatisticsViewController --> GestionChambre
+StatisticsViewController --> GestionEtudiant
+
+GestionUtilisateur --> Utilisateur
+GestionUtilisateur --> UserRole
+GestionBatiment --> Batiment
+GestionChambre --> Chambre
+GestionEtudiant --> Etudiant
+
+GestionUtilisateur --> DatabaseManager
+GestionBatiment --> DatabaseManager
+GestionChambre --> DatabaseManager
+GestionEtudiant --> DatabaseManager
+DatabaseManager --> MySQL
+
+Utilisateur --> UserRole
+Utilisateur --> Batiment : batimentId
+Chambre --> Batiment : batimentId
+Chambre --> Etudiant : etudiantId
+Etudiant --> Chambre : chambreId
+
+@enduml

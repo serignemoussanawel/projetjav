@@ -1,0 +1,57 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Administrateur" as Admin
+actor "Chef de bâtiment" as Chef
+actor "Étudiant" as Etudiant
+
+rectangle "Système de gestion des chambres du campus" {
+  usecase "Se connecter" as UC_Login
+  usecase "Se déconnecter" as UC_Logout
+
+  usecase "Consulter tableau de bord" as UC_Dashboard
+  usecase "Gérer bâtiments" as UC_Batiments
+  usecase "Gérer chambres" as UC_Chambres
+  usecase "Gérer étudiants" as UC_Etudiants
+  usecase "Gérer utilisateurs" as UC_Users
+  usecase "Consulter statistiques" as UC_Stats
+
+  usecase "Gérer les chambres\nde son bâtiment" as UC_ChefRooms
+  usecase "Affecter une chambre" as UC_Assign
+  usecase "Libérer une chambre" as UC_Release
+  usecase "Consulter disponibilité\ndes chambres" as UC_Availability
+
+  usecase "Consulter son profil" as UC_Profile
+  usecase "Consulter sa chambre" as UC_MyRoom
+}
+
+Admin --> UC_Login
+Admin --> UC_Logout
+Admin --> UC_Dashboard
+Admin --> UC_Batiments
+Admin --> UC_Chambres
+Admin --> UC_Etudiants
+Admin --> UC_Users
+Admin --> UC_Stats
+Admin --> UC_Assign
+Admin --> UC_Release
+
+Chef --> UC_Login
+Chef --> UC_Logout
+Chef --> UC_Dashboard
+Chef --> UC_ChefRooms
+Chef --> UC_Assign
+Chef --> UC_Release
+Chef --> UC_Availability
+
+Etudiant --> UC_Login
+Etudiant --> UC_Logout
+Etudiant --> UC_Profile
+Etudiant --> UC_MyRoom
+
+UC_Etudiants ..> UC_Assign : <<include>>
+UC_Etudiants ..> UC_Release : <<include>>
+UC_ChefRooms ..> UC_Availability : <<include>>
+
+@enduml
