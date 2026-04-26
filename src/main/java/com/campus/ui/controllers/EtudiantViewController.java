@@ -209,6 +209,7 @@ public class EtudiantViewController {
                     nomField.getText().trim(),
                     prenomField.getText().trim(),
                     emailField.getText().trim(),
+                    "etud123", // default password
                     codePermanentField.getText().trim(),
                     specialiteField.getText().trim());
             gestionEtudiant.addEtudiant(etudiant);

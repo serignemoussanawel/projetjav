@@ -4,6 +4,7 @@ import com.campus.managers.GestionBatiment;
 import com.campus.managers.GestionChambre;
 import com.campus.managers.GestionEtudiant;
 import com.campus.managers.GestionUtilisateur;
+import com.campus.models.ChefBatiment;
 import com.campus.models.Chambre;
 import com.campus.models.Etudiant;
 import com.campus.models.Utilisateur;
@@ -48,7 +49,6 @@ public class ChefBatimentDashboardController {
     private TableView<Chambre> chambresTable;
     private TextField chambreIdField;
     private Spinner<Integer> chambreNumeroSpinner;
-    private Spinner<Integer> chambreEtageSpinner;
     private Spinner<Integer> chambreCapaciteSpinner;
     private ComboBox<String> chambreTypeCombo;
     private Button saveChambreButton;
@@ -69,7 +69,11 @@ public class ChefBatimentDashboardController {
         this.gestionEtudiant = gestionEtudiant;
         this.primaryStage = primaryStage;
         this.currentUser = gestionUtilisateur.getUtilisateurConnecte();
-        this.batimentId = currentUser.getBatimentId();
+        if (currentUser instanceof ChefBatiment) {
+            this.batimentId = ((ChefBatiment) currentUser).getBatimentId();
+        } else {
+            this.batimentId = null; // or handle error
+        }
     }
 
     public void show() {
@@ -221,7 +225,6 @@ public class ChefBatimentDashboardController {
         chambreIdField = new TextField();
         chambreIdField.setPromptText("Identifiant");
         chambreNumeroSpinner = new Spinner<>(1, 999, 1);
-        chambreEtageSpinner = new Spinner<>(1, 20, 1);
         chambreCapaciteSpinner = new Spinner<>(1, 10, 1);
         chambreTypeCombo = new ComboBox<>(FXCollections.observableArrayList("Simple", "Double", "Suite"));
         chambreTypeCombo.setMaxWidth(Double.MAX_VALUE);
@@ -240,7 +243,6 @@ public class ChefBatimentDashboardController {
                 formTitle, formSubtitle,
                 new Label("Identifiant"), chambreIdField,
                 new Label("Numéro"), chambreNumeroSpinner,
-                new Label("Étage"), chambreEtageSpinner,
                 new Label("Capacité"), chambreCapaciteSpinner,
                 new Label("Type"), chambreTypeCombo,
                 saveChambreButton, resetButton);
@@ -370,14 +372,12 @@ public class ChefBatimentDashboardController {
     private void setupChambresTable() {
         TableColumn<Chambre, Integer> numeroCol = new TableColumn<>("Numéro");
         numeroCol.setCellValueFactory(c -> new SimpleObjectProperty<>(c.getValue().getNumero()));
-        TableColumn<Chambre, Integer> etageCol = new TableColumn<>("Étage");
-        etageCol.setCellValueFactory(c -> new SimpleObjectProperty<>(c.getValue().getEtage()));
         TableColumn<Chambre, String> typeCol = new TableColumn<>("Type");
         typeCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getType()));
         TableColumn<Chambre, String> etatCol = new TableColumn<>("État");
         etatCol.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getEtat()));
 
-        chambresTable.getColumns().setAll(List.of(numeroCol, etageCol, typeCol, etatCol));
+        chambresTable.getColumns().setAll(List.of(numeroCol, typeCol, etatCol));
         chambresTable.getSelectionModel().selectedItemProperty()
                 .addListener((obs, oldValue, newValue) -> populateChambreForm(newValue));
     }
@@ -404,10 +404,9 @@ public class ChefBatimentDashboardController {
         chambreIdField.setText(chambre.getId());
         chambreIdField.setDisable(true);
         chambreNumeroSpinner.getValueFactory().setValue(chambre.getNumero());
-        chambreEtageSpinner.getValueFactory().setValue(chambre.getEtage());
         chambreCapaciteSpinner.getValueFactory().setValue(chambre.getCapacite());
         chambreTypeCombo.setValue(chambre.getType());
-        saveChambreButton.setText("Mettre à jour");
+        saveChambreButton.setText("Modifier");
     }
 
     private void saveChambre() {
@@ -421,14 +420,12 @@ public class ChefBatimentDashboardController {
                     chambreIdField.getText().trim(),
                     chambreNumeroSpinner.getValue(),
                     batimentId,
-                    chambreEtageSpinner.getValue(),
                     chambreCapaciteSpinner.getValue(),
                     chambreTypeCombo.getValue());
             gestionChambre.addChambre(chambre);
         } else {
             selectedChambre.setNumero(chambreNumeroSpinner.getValue());
             selectedChambre.setBatimentId(batimentId);
-            selectedChambre.setEtage(chambreEtageSpinner.getValue());
             selectedChambre.setCapacite(chambreCapaciteSpinner.getValue());
             selectedChambre.setType(chambreTypeCombo.getValue());
             gestionChambre.updateChambre(selectedChambre);
@@ -536,9 +533,6 @@ public class ChefBatimentDashboardController {
         }
         if (chambreNumeroSpinner != null) {
             chambreNumeroSpinner.getValueFactory().setValue(1);
-        }
-        if (chambreEtageSpinner != null) {
-            chambreEtageSpinner.getValueFactory().setValue(1);
         }
         if (chambreCapaciteSpinner != null) {
             chambreCapaciteSpinner.getValueFactory().setValue(1);

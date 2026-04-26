@@ -1,51 +1,81 @@
 package com.campus.models;
 
+import java.util.Objects;
+
 public class Chambre {
     private String id;
     private int numero;
     private String batimentId;
-    private int etage;
     private int capacite;
     private String etat; // "Libre", "Occupée", "Maintenance"
     private String etudiantId; // ID de l'étudiant occupant
     private String type; // "Simple", "Double", "Suite"
 
-    public Chambre(String id, int numero, String batimentId,
-                  int etage, int capacite, String type) {
+    public Chambre(String id, int numero, String batimentId, int capacite, String type) {
         this.id = id;
         this.numero = numero;
         this.batimentId = batimentId;
-        this.etage = etage;
         this.capacite = capacite;
         this.type = type;
         this.etat = "Libre";
         this.etudiantId = null;
     }
 
-    // Getters and Setters
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
+    public String getId() {
+        return id;
+    }
 
-    public int getNumero() { return numero; }
-    public void setNumero(int numero) { this.numero = numero; }
+    public void setId(String id) {
+        this.id = id;
+    }
 
-    public String getBatimentId() { return batimentId; }
-    public void setBatimentId(String batimentId) { this.batimentId = batimentId; }
+    public int getNumero() {
+        return numero;
+    }
 
-    public int getEtage() { return etage; }
-    public void setEtage(int etage) { this.etage = etage; }
+    public void setNumero(int numero) {
+        this.numero = numero;
+    }
 
-    public int getCapacite() { return capacite; }
-    public void setCapacite(int capacite) { this.capacite = capacite; }
+    public String getBatimentId() {
+        return batimentId;
+    }
 
-    public String getEtat() { return etat; }
-    public void setEtat(String etat) { this.etat = etat; }
+    public void setBatimentId(String batimentId) {
+        this.batimentId = batimentId;
+    }
 
-    public String getEtudiantId() { return etudiantId; }
-    public void setEtudiantId(String etudiantId) { this.etudiantId = etudiantId; }
+    public int getCapacite() {
+        return capacite;
+    }
 
-    public String getType() { return type; }
-    public void setType(String type) { this.type = type; }
+    public void setCapacite(int capacite) {
+        this.capacite = capacite;
+    }
+
+    public String getEtat() {
+        return etat;
+    }
+
+    public void setEtat(String etat) {
+        this.etat = etat;
+    }
+
+    public String getEtudiantId() {
+        return etudiantId;
+    }
+
+    public void setEtudiantId(String etudiantId) {
+        this.etudiantId = etudiantId;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
 
     public boolean isLibre() {
         return "Libre".equals(etat);
@@ -76,7 +106,18 @@ public class Chambre {
 
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof Chambre)) return false;
-        return id.equals(((Chambre) obj).id);
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof Chambre)) {
+            return false;
+        }
+        Chambre other = (Chambre) obj;
+        return Objects.equals(id, other.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

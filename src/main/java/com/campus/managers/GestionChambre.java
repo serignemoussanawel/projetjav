@@ -23,8 +23,8 @@ public class GestionChambre {
 
     public void addChambre(Chambre chambre) {
         String sql = """
-                INSERT INTO chambres (id, numero, batiment_id, etage, capacite, etat, etudiant_id, type)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO chambres (id, numero, batiment_id, capacite, etat, etudiant_id, type)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
                 """;
 
         try (Connection connection = DatabaseManager.getConnection();
@@ -44,7 +44,7 @@ public class GestionChambre {
     public void updateChambre(Chambre chambre) {
         String sql = """
                 UPDATE chambres
-                SET numero = ?, batiment_id = ?, etage = ?, capacite = ?, etat = ?, etudiant_id = ?, type = ?
+                SET numero = ?, batiment_id = ?, capacite = ?, etat = ?, etudiant_id = ?, type = ?
                 WHERE id = ?
                 """;
 
@@ -52,12 +52,11 @@ public class GestionChambre {
                 PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setInt(1, chambre.getNumero());
             statement.setString(2, chambre.getBatimentId());
-            statement.setInt(3, chambre.getEtage());
-            statement.setInt(4, chambre.getCapacite());
-            statement.setString(5, chambre.getEtat());
-            statement.setString(6, chambre.getEtudiantId());
-            statement.setString(7, chambre.getType());
-            statement.setString(8, chambre.getId());
+            statement.setInt(3, chambre.getCapacite());
+            statement.setString(4, chambre.getEtat());
+            statement.setString(5, chambre.getEtudiantId());
+            statement.setString(6, chambre.getType());
+            statement.setString(7, chambre.getId());
             statement.executeUpdate();
             chambres.put(chambre.getId(), chambre);
         } catch (SQLException e) {
@@ -94,12 +93,6 @@ public class GestionChambre {
                 .toList();
     }
 
-    public List<Chambre> getChambresByEtage(String batimentId, int etage) {
-        return chambres.values().stream()
-                .filter(c -> c.getBatimentId().equals(batimentId) && c.getEtage() == etage)
-                .toList();
-    }
-
     public boolean affecterChambre(String chambreId, String etudiantId) {
         Chambre chambre = getChambre(chambreId);
         if (chambre != null && chambre.isLibre()) {
@@ -128,19 +121,19 @@ public class GestionChambre {
         return (int) chambres.values().stream().filter(Chambre::isOccupee).count();
     }
 
-    public int getNextNumero(String batimentId, int etage) {
+    public int getNextNumero(String batimentId) {
         return chambres.values().stream()
-                .filter(c -> c.getBatimentId().equals(batimentId) && c.getEtage() == etage)
+                .filter(c -> c.getBatimentId().equals(batimentId))
                 .mapToInt(Chambre::getNumero)
                 .max()
                 .orElse(0) + 1;
     }
 
-    public Chambre creerChambre(String batimentId, int etage, int capacite, String type) {
-        int numero = getNextNumero(batimentId, etage);
+    public Chambre creerChambre(String batimentId, int capacite, String type) {
+        int numero = getNextNumero(batimentId);
         String id = "C" + nextId++;
 
-        Chambre chambre = new Chambre(id, numero, batimentId, etage, capacite, type);
+        Chambre chambre = new Chambre(id, numero, batimentId, capacite, type);
         addChambre(chambre);
 
         return chambre;
@@ -150,9 +143,9 @@ public class GestionChambre {
         chambres.clear();
 
         String sql = """
-                SELECT id, numero, batiment_id, etage, capacite, etat, etudiant_id, type
+                SELECT id, numero, batiment_id, capacite, etat, etudiant_id, type
                 FROM chambres
-                ORDER BY batiment_id, etage, numero
+                ORDER BY batiment_id, numero
                 """;
 
         try (Connection connection = DatabaseManager.getConnection();
@@ -164,7 +157,6 @@ public class GestionChambre {
                         resultSet.getString("id"),
                         resultSet.getInt("numero"),
                         resultSet.getString("batiment_id"),
-                        resultSet.getInt("etage"),
                         resultSet.getInt("capacite"),
                         resultSet.getString("type"));
                 chambre.setEtat(resultSet.getString("etat"));

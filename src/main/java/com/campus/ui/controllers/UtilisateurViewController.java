@@ -2,7 +2,9 @@ package com.campus.ui.controllers;
 
 import com.campus.managers.GestionBatiment;
 import com.campus.managers.GestionUtilisateur;
+import com.campus.models.Admin;
 import com.campus.models.Batiment;
+import com.campus.models.ChefBatiment;
 import com.campus.models.UserRole;
 import com.campus.models.Utilisateur;
 import javafx.beans.property.SimpleStringProperty;
@@ -178,7 +180,8 @@ public class UtilisateurViewController {
         actifCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().isActif() ? "Actif" : "Inactif"));
 
         tableView.getColumns().setAll(List.of(nomCol, emailCol, roleCol, actifCol));
-        tableView.getSelectionModel().selectedItemProperty().addListener((obs, oldValue, newValue) -> populateForm(newValue));
+        tableView.getSelectionModel().selectedItemProperty()
+                .addListener((obs, oldValue, newValue) -> populateForm(newValue));
     }
 
     private void populateForm(Utilisateur utilisateur) {
@@ -193,14 +196,19 @@ public class UtilisateurViewController {
         emailField.setText(utilisateur.getEmail());
         passwordField.setText(utilisateur.getMotDePasse());
         roleCombo.setValue(utilisateur.getRole());
-        batimentCombo.setValue(gestionBatiment.getBatiment(utilisateur.getBatimentId()));
+        String batimentId = null;
+        if (utilisateur instanceof ChefBatiment) {
+            batimentId = ((ChefBatiment) utilisateur).getBatimentId();
+        }
+        batimentCombo.setValue(gestionBatiment.getBatiment(batimentId));
         updateBatimentFieldState(utilisateur.getRole());
         saveButton.setText("Modifier");
     }
 
     private void saveUtilisateur() {
         if (idField.getText().isBlank() || nomField.getText().isBlank() || prenomField.getText().isBlank()
-                || emailField.getText().isBlank() || passwordField.getText().isBlank() || roleCombo.getValue() == null) {
+                || emailField.getText().isBlank() || passwordField.getText().isBlank()
+                || roleCombo.getValue() == null) {
             showAlert("Erreur", "Veuillez remplir tous les champs.");
             return;
         }
@@ -216,24 +224,83 @@ public class UtilisateurViewController {
 
         Utilisateur utilisateurToSave;
         if (selectedUtilisateur == null) {
-            utilisateurToSave = new Utilisateur(
-                    idField.getText().trim(),
-                    nomField.getText().trim(),
-                    prenomField.getText().trim(),
-                    emailField.getText().trim(),
-                    passwordField.getText(),
-                    roleCombo.getValue());
+            switch (roleCombo.getValue()) {
+                case ADMIN:
+                    utilisateurToSave = new Admin(
+                            idField.getText().trim(),
+                            nomField.getText().trim(),
+                            prenomField.getText().trim(),
+                            emailField.getText().trim(),
+                            passwordField.getText());
+                    break;
+                case CHEF_BATIMENT:
+                    utilisateurToSave = new ChefBatiment(
+                            idField.getText().trim(),
+                            nomField.getText().trim(),
+                            prenomField.getText().trim(),
+                            emailField.getText().trim(),
+                            passwordField.getText(),
+                            batimentId);
+                    break;
+                case ETUDIANT:
+                    utilisateurToSave = new Utilisateur(
+                            idField.getText().trim(),
+                            nomField.getText().trim(),
+                            prenomField.getText().trim(),
+                            emailField.getText().trim(),
+                            passwordField.getText(),
+                            roleCombo.getValue());
+                    break;
+                default:
+                    utilisateurToSave = new Utilisateur(
+                            idField.getText().trim(),
+                            nomField.getText().trim(),
+                            prenomField.getText().trim(),
+                            emailField.getText().trim(),
+                            passwordField.getText(),
+                            roleCombo.getValue());
+                    break;
+            }
         } else {
-            utilisateurToSave = new Utilisateur(
-                    selectedUtilisateur.getId(),
-                    nomField.getText().trim(),
-                    prenomField.getText().trim(),
-                    emailField.getText().trim(),
-                    passwordField.getText(),
-                    roleCombo.getValue());
+            switch (roleCombo.getValue()) {
+                case ADMIN:
+                    utilisateurToSave = new Admin(
+                            selectedUtilisateur.getId(),
+                            nomField.getText().trim(),
+                            prenomField.getText().trim(),
+                            emailField.getText().trim(),
+                            passwordField.getText());
+                    break;
+                case CHEF_BATIMENT:
+                    utilisateurToSave = new ChefBatiment(
+                            selectedUtilisateur.getId(),
+                            nomField.getText().trim(),
+                            prenomField.getText().trim(),
+                            emailField.getText().trim(),
+                            passwordField.getText(),
+                            batimentId);
+                    break;
+                case ETUDIANT:
+                    utilisateurToSave = new Utilisateur(
+                            selectedUtilisateur.getId(),
+                            nomField.getText().trim(),
+                            prenomField.getText().trim(),
+                            emailField.getText().trim(),
+                            passwordField.getText(),
+                            roleCombo.getValue());
+                    break;
+                default:
+                    utilisateurToSave = new Utilisateur(
+                            selectedUtilisateur.getId(),
+                            nomField.getText().trim(),
+                            prenomField.getText().trim(),
+                            emailField.getText().trim(),
+                            passwordField.getText(),
+                            roleCombo.getValue());
+                    break;
+            }
             utilisateurToSave.setActif(selectedUtilisateur.isActif());
         }
-        utilisateurToSave.setBatimentId(batimentId);
 
         try {
             if (selectedUtilisateur == null) {

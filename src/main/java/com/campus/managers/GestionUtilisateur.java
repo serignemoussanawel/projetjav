@@ -1,6 +1,8 @@
 package com.campus.managers;
 
 import com.campus.database.DatabaseManager;
+import com.campus.models.Admin;
+import com.campus.models.ChefBatiment;
 import com.campus.models.UserRole;
 import com.campus.models.Utilisateur;
 import java.sql.Connection;
@@ -69,6 +71,11 @@ public class GestionUtilisateur {
     public void updateUtilisateur(Utilisateur utilisateur) {
         validateChefBatimentAssignment(utilisateur);
 
+        String batimentId = null;
+        if (utilisateur instanceof ChefBatiment) {
+            batimentId = ((ChefBatiment) utilisateur).getBatimentId();
+        }
+
         String sql = """
                 UPDATE utilisateurs
                 SET nom = ?, prenom = ?, email = ?, mot_de_passe = ?, role = ?, batiment_id = ?, actif = ?
@@ -82,7 +89,7 @@ public class GestionUtilisateur {
             statement.setString(3, utilisateur.getEmail());
             statement.setString(4, utilisateur.getMotDePasse());
             statement.setString(5, utilisateur.getRole().name());
-            statement.setString(6, utilisateur.getBatimentId());
+            statement.setString(6, batimentId);
             statement.setBoolean(7, utilisateur.isActif());
             statement.setString(8, utilisateur.getId());
             statement.executeUpdate();
@@ -161,7 +168,8 @@ public class GestionUtilisateur {
 
     public Utilisateur getChefBatiment(String batimentId) {
         return utilisateurs.values().stream()
-                .filter(u -> u.getRole() == UserRole.CHEF_BATIMENT && batimentId.equals(u.getBatimentId()))
+                .filter(u -> u.getRole() == UserRole.CHEF_BATIMENT && u instanceof ChefBatiment
+                        && batimentId.equals(((ChefBatiment) u).getBatimentId()))
                 .findFirst()
                 .orElse(null);
     }
@@ -171,26 +179,50 @@ public class GestionUtilisateur {
             return;
         }
 
-        if (utilisateur.getBatimentId() == null || utilisateur.getBatimentId().isBlank()) {
+        String batimentId = null;
+        if (utilisateur instanceof ChefBatiment) {
+            batimentId = ((ChefBatiment) utilisateur).getBatimentId();
+        }
+
+        if (batimentId == null || batimentId.isBlank()) {
             throw new IllegalArgumentException("Un chef de bâtiment doit être associé à un bâtiment.");
         }
 
-        Utilisateur existingChef = getChefBatiment(utilisateur.getBatimentId());
+        Utilisateur existingChef = getChefBatiment(batimentId);
         if (existingChef != null && !existingChef.getId().equals(utilisateur.getId())) {
             throw new IllegalArgumentException("Ce bâtiment a déjà un chef de bâtiment.");
         }
     }
 
     private Utilisateur mapUtilisateur(ResultSet resultSet) throws SQLException {
-        Utilisateur utilisateur = new Utilisateur(
-                resultSet.getString("id"),
-                resultSet.getString("nom"),
-                resultSet.getString("prenom"),
-                resultSet.getString("email"),
-                resultSet.getString("mot_de_passe"),
-                UserRole.valueOf(resultSet.getString("role")));
-        utilisateur.setBatimentId(resultSet.getString("batiment_id"));
-        utilisateur.setActif(resultSet.getBoolean("actif"));
+        String id = resultSet.getString("id");
+        String nom = resultSet.getString("nom");
+        String prenom = resultSet.getString("prenom");
+        String email = resultSet.getString("email");
+        String motDePasse = resultSet.getString("mot_de_passe");
+        UserRole role = UserRole.valueOf(resultSet.getString("role"));
+        String batimentId = resultSet.getString("batiment_id");
+        boolean actif = resultSet.getBoolean("actif");
+
+        Utilisateur utilisateur;
+        switch (role) {
+            case ADMIN:
+                utilisateur = new Admin(id, nom, prenom, email, motDePasse);
+                break;
+            case CHEF_BATIMENT:
+                utilisateur = new ChefBatiment(id, nom, prenom, email, motDePasse, batimentId);
+                break;
+            case ETUDIANT:
+                // For students, we create a basic Utilisateur since student details are in
+                // separate table
+                utilisateur = new Utilisateur(id, nom, prenom, email, motDePasse, role);
+                break;
+            default:
+                utilisateur = new Utilisateur(id, nom, prenom, email, motDePasse, role);
+                break;
+        }
+
+        utilisateur.setActif(actif);
         return utilisateur;
     }
 }

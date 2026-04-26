@@ -176,7 +176,6 @@ public class EtudiantDashboardController {
                         profileRow("Type", chambre.getType()),
                         profileRow("Capacité", chambre.getCapacite() + " personne(s)"),
                         profileRow("Bâtiment", gestionBatiment.getBatiment(chambre.getBatimentId()).getNom()),
-                        profileRow("Étage", String.valueOf(chambre.getEtage())),
                         profileRow("Date d'affectation", etudiant.getDateAffectation()));
             }
         } else {

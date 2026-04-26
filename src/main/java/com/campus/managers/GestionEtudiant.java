@@ -23,15 +23,16 @@ public class GestionEtudiant {
 
     public Etudiant creerEtudiant(String nom, String prenom, String email, String codePermanent, String specialite) {
         String id = "E" + nextId++;
-        Etudiant etudiant = new Etudiant(id, nom, prenom, email, codePermanent, specialite);
+        Etudiant etudiant = new Etudiant(id, nom, prenom, email, "etud123", codePermanent, specialite);
         addEtudiant(etudiant);
         return etudiant;
     }
 
     public void addEtudiant(Etudiant etudiant) {
         String sql = """
-                INSERT INTO etudiants (id, nom, prenom, email, code_permanent, specialite, chambre_id, date_affectation, actif)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO etudiants (id, nom, prenom, email, code_permanent, specialite, chambre_id, date_affectation,
+                chambre_payee, date_paiement_chambre, reclamation, actif)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
 
         try (Connection connection = DatabaseManager.getConnection();
@@ -58,7 +59,8 @@ public class GestionEtudiant {
     public void updateEtudiant(Etudiant etudiant) {
         String sql = """
                 UPDATE etudiants
-                SET nom = ?, prenom = ?, email = ?, code_permanent = ?, specialite = ?, chambre_id = ?, date_affectation = ?, actif = ?
+                SET nom = ?, prenom = ?, email = ?, code_permanent = ?, specialite = ?, chambre_id = ?, date_affectation = ?,
+                chambre_payee = ?, date_paiement_chambre = ?, reclamation = ?, actif = ?
                 WHERE id = ?
                 """;
 
@@ -71,8 +73,11 @@ public class GestionEtudiant {
             statement.setString(5, etudiant.getSpecialite());
             statement.setString(6, etudiant.getChambreId());
             statement.setString(7, etudiant.getDateAffectation());
-            statement.setBoolean(8, etudiant.isActif());
-            statement.setString(9, etudiant.getId());
+            statement.setBoolean(8, etudiant.isChambrePayee());
+            statement.setString(9, etudiant.getDatePaiementChambre());
+            statement.setString(10, etudiant.getReclamation());
+            statement.setBoolean(11, etudiant.isActif());
+            statement.setString(12, etudiant.getId());
             statement.executeUpdate();
             etudiants.put(etudiant.getId(), etudiant);
         } catch (SQLException e) {
@@ -137,6 +142,26 @@ public class GestionEtudiant {
         return false;
     }
 
+    public boolean payerChambre(String etudiantId, String datePaiement) {
+        Etudiant etudiant = getEtudiant(etudiantId);
+        if (etudiant != null && etudiant.hasRoom()) {
+            etudiant.payerChambre(datePaiement);
+            updateEtudiant(etudiant);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean faireReclamation(String etudiantId, String message) {
+        Etudiant etudiant = getEtudiant(etudiantId);
+        if (etudiant != null && message != null && !message.isBlank()) {
+            etudiant.faireReclamation(message.trim());
+            updateEtudiant(etudiant);
+            return true;
+        }
+        return false;
+    }
+
     public int getNombreTotalEtudiants() {
         return etudiants.size();
     }
@@ -149,9 +174,11 @@ public class GestionEtudiant {
         etudiants.clear();
 
         String sql = """
-                SELECT id, nom, prenom, email, code_permanent, specialite, chambre_id, date_affectation, actif
-                FROM etudiants
-                ORDER BY prenom, nom
+                SELECT e.id, e.nom, e.prenom, e.email, u.mot_de_passe, e.code_permanent, e.specialite, e.chambre_id, e.date_affectation,
+                e.chambre_payee, e.date_paiement_chambre, e.reclamation, e.actif
+                FROM etudiants e
+                JOIN utilisateurs u ON e.email = u.email
+                ORDER BY e.prenom, e.nom
                 """;
 
         try (Connection connection = DatabaseManager.getConnection();
@@ -164,10 +191,14 @@ public class GestionEtudiant {
                         resultSet.getString("nom"),
                         resultSet.getString("prenom"),
                         resultSet.getString("email"),
+                        resultSet.getString("mot_de_passe"),
                         resultSet.getString("code_permanent"),
                         resultSet.getString("specialite"));
                 etudiant.setChambreId(resultSet.getString("chambre_id"));
                 etudiant.setDateAffectation(resultSet.getString("date_affectation"));
+                etudiant.setChambrePayee(resultSet.getBoolean("chambre_payee"));
+                etudiant.setDatePaiementChambre(resultSet.getString("date_paiement_chambre"));
+                etudiant.setReclamation(resultSet.getString("reclamation"));
                 etudiant.setActif(resultSet.getBoolean("actif"));
                 etudiants.put(etudiant.getId(), etudiant);
             }

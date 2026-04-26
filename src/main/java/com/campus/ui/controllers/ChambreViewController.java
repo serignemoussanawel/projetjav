@@ -4,7 +4,6 @@ import com.campus.managers.GestionBatiment;
 import com.campus.managers.GestionChambre;
 import com.campus.models.Batiment;
 import com.campus.models.Chambre;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -33,7 +32,6 @@ public class ChambreViewController {
     private TextField idField;
     private Spinner<Integer> numeroSpinner;
     private ComboBox<Batiment> batimentCombo;
-    private Spinner<Integer> etageSpinner;
     private Spinner<Integer> capaciteSpinner;
     private ComboBox<String> typeCombo;
     private ComboBox<String> etatCombo;
@@ -111,7 +109,6 @@ public class ChambreViewController {
         numeroSpinner = new Spinner<>(1, 999, 1);
         batimentCombo = new ComboBox<>(FXCollections.observableArrayList(gestionBatiment.getAllBatiments()));
         batimentCombo.setMaxWidth(Double.MAX_VALUE);
-        etageSpinner = new Spinner<>(1, 20, 1);
         capaciteSpinner = new Spinner<>(1, 10, 1);
         typeCombo = new ComboBox<>(FXCollections.observableArrayList("Simple", "Double", "Suite"));
         typeCombo.setMaxWidth(Double.MAX_VALUE);
@@ -133,7 +130,6 @@ public class ChambreViewController {
                 new Label("Identifiant"), idField,
                 new Label("Numéro"), numeroSpinner,
                 new Label("Bâtiment"), batimentCombo,
-                new Label("Étage"), etageSpinner,
                 new Label("Capacité"), capaciteSpinner,
                 new Label("Type"), typeCombo,
                 new Label("État"), etatCombo,
@@ -154,16 +150,13 @@ public class ChambreViewController {
             return new SimpleStringProperty(batiment != null ? batiment.getNom() : "N/A");
         });
 
-        TableColumn<Chambre, Integer> etageCol = new TableColumn<>("Étage");
-        etageCol.setCellValueFactory(cell -> new SimpleObjectProperty<>(cell.getValue().getEtage()));
-
         TableColumn<Chambre, String> typeCol = new TableColumn<>("Type");
         typeCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getType()));
 
         TableColumn<Chambre, String> etatCol = new TableColumn<>("État");
         etatCol.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getEtat()));
 
-        tableView.getColumns().setAll(List.of(batimentCol, etageCol, typeCol, etatCol));
+        tableView.getColumns().setAll(List.of(batimentCol, typeCol, etatCol));
         tableView.getSelectionModel().selectedItemProperty().addListener((obs, oldValue, newValue) -> populateForm(newValue));
     }
 
@@ -176,7 +169,6 @@ public class ChambreViewController {
         idField.setDisable(true);
         numeroSpinner.getValueFactory().setValue(chambre.getNumero());
         batimentCombo.setValue(gestionBatiment.getBatiment(chambre.getBatimentId()));
-        etageSpinner.getValueFactory().setValue(chambre.getEtage());
         capaciteSpinner.getValueFactory().setValue(chambre.getCapacite());
         typeCombo.setValue(chambre.getType());
         etatCombo.setValue(chambre.getEtat());
@@ -195,7 +187,6 @@ public class ChambreViewController {
                     idField.getText().trim(),
                     numeroSpinner.getValue(),
                     batimentCombo.getValue().getId(),
-                    etageSpinner.getValue(),
                     capaciteSpinner.getValue(),
                     typeCombo.getValue());
             chambre.setEtat(etatCombo.getValue());
@@ -203,7 +194,6 @@ public class ChambreViewController {
         } else {
             selectedChambre.setNumero(numeroSpinner.getValue());
             selectedChambre.setBatimentId(batimentCombo.getValue().getId());
-            selectedChambre.setEtage(etageSpinner.getValue());
             selectedChambre.setCapacite(capaciteSpinner.getValue());
             selectedChambre.setType(typeCombo.getValue());
             selectedChambre.setEtat(etatCombo.getValue());
@@ -242,7 +232,6 @@ public class ChambreViewController {
         idField.setDisable(false);
         numeroSpinner.getValueFactory().setValue(1);
         batimentCombo.setValue(null);
-        etageSpinner.getValueFactory().setValue(1);
         capaciteSpinner.getValueFactory().setValue(1);
         typeCombo.setValue(null);
         etatCombo.setValue("Libre");
