@@ -9,6 +9,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
@@ -16,12 +18,18 @@ import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
-import javafx.scene.shape.Ellipse;
 import javafx.scene.shape.Polygon;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 public class LoginController {
+    private static final String[] LOGO_RESOURCE_CANDIDATES = {
+            "/assets/logo.png",
+            "/assets/logo-uadb.png",
+            "/assets/logo-uadb.jpg",
+            "/assets/logo-uadb.jpeg"
+    };
 
     private GestionUtilisateur gestionUtilisateur;
     private Stage primaryStage;
@@ -140,79 +148,120 @@ public class LoginController {
     private StackPane createLogoView() {
         StackPane logo = new StackPane();
         logo.getStyleClass().add("login-logo");
-        logo.setPrefSize(210, 240);
-        logo.setMinSize(210, 240);
-        logo.setMaxSize(210, 240);
+        logo.setPrefSize(220, 240);
+        logo.setMinSize(220, 240);
+        logo.setMaxSize(220, 240);
 
-        Ellipse outerRing = new Ellipse(102, 118);
-        outerRing.setFill(Color.WHITE);
-        outerRing.setStroke(Color.web("#8d4b1f"));
-        outerRing.setStrokeWidth(3);
-
-        Ellipse innerRing = new Ellipse(90, 106);
-        innerRing.setFill(Color.TRANSPARENT);
-        innerRing.setStroke(Color.web("#b06c35"));
-        innerRing.setStrokeWidth(1.6);
-
-        Circle core = new Circle(58);
-        core.setFill(Color.web("#5d8fcd"));
-        core.setStroke(Color.web("#3f6ea8"));
-        core.setStrokeWidth(2);
+        ImageView logoImageView = createLogoImageView();
+        if (logoImageView != null) {
+            logo.getChildren().add(logoImageView);
+            return logo;
+        }
 
         Label topText = new Label("UNIVERSITE ALIOUNE DIOP");
-        topText.getStyleClass().add("login-logo-ring-text");
-        StackPane.setAlignment(topText, Pos.TOP_CENTER);
-        StackPane.setMargin(topText, new Insets(26, 0, 0, 0));
+        topText.getStyleClass().add("login-logo-title");
 
-        Label bottomText = new Label("de BAMBEY");
-        bottomText.getStyleClass().add("login-logo-ring-text");
-        StackPane.setAlignment(bottomText, Pos.BOTTOM_CENTER);
-        StackPane.setMargin(bottomText, new Insets(0, 0, 24, 0));
+        Circle outerRing = new Circle(76);
+        outerRing.setFill(Color.WHITE);
+        outerRing.setStroke(Color.web("#c07d45"));
+        outerRing.setStrokeWidth(4);
+
+        Circle innerRing = new Circle(64);
+        innerRing.setFill(Color.web("#f7fafc"));
+        innerRing.setStroke(Color.web("#dfb07c"));
+        innerRing.setStrokeWidth(2);
+
+        Circle core = new Circle(51);
+        core.setFill(Color.web("#1f5372"));
+        core.setStroke(Color.web("#2d739a"));
+        core.setStrokeWidth(2);
+
+        Circle sun = new Circle(8);
+        sun.setFill(Color.web("#f0c368"));
+        sun.setTranslateY(-26);
+
+        Polygon roof = new Polygon(
+                -24.0, -2.0,
+                0.0, -20.0,
+                24.0, -2.0,
+                18.0, 4.0,
+                0.0, -9.0,
+                -18.0, 4.0);
+        roof.setFill(Color.web("#b7682e"));
+
+        Rectangle tower = new Rectangle(18, 40);
+        tower.setArcWidth(6);
+        tower.setArcHeight(6);
+        tower.setFill(Color.WHITE);
+        tower.setTranslateY(16);
+
+        Rectangle gate = new Rectangle(8, 18);
+        gate.setArcWidth(4);
+        gate.setArcHeight(4);
+        gate.setFill(Color.web("#8fbad1"));
+        gate.setTranslateY(26);
+
+        Rectangle leftWing = new Rectangle(16, 22);
+        leftWing.setArcWidth(6);
+        leftWing.setArcHeight(6);
+        leftWing.setFill(Color.web("#d8ebf5"));
+        leftWing.setTranslateX(-20);
+        leftWing.setTranslateY(22);
+
+        Rectangle rightWing = new Rectangle(16, 22);
+        rightWing.setArcWidth(6);
+        rightWing.setArcHeight(6);
+        rightWing.setFill(Color.web("#d8ebf5"));
+        rightWing.setTranslateX(20);
+        rightWing.setTranslateY(22);
 
         Label acronym = new Label("UADB");
         acronym.getStyleClass().add("login-logo-acronym");
+        acronym.setTranslateY(-48);
 
-        Label motto = new Label("L'Excellence est ma Constance,\nl'Ethique ma Vertu");
+        StackPane emblem = new StackPane(
+                outerRing,
+                innerRing,
+                core,
+                sun,
+                roof,
+                leftWing,
+                rightWing,
+                tower,
+                gate,
+                acronym);
+        emblem.setPrefSize(176, 176);
+        emblem.setMaxSize(176, 176);
+
+        Label bottomText = new Label("DE BAMBEY");
+        bottomText.getStyleClass().add("login-logo-subtitle");
+
+        Label motto = new Label("Excellence • Ethique • Constance");
         motto.getStyleClass().add("login-logo-motto");
-        motto.setTranslateY(38);
-        motto.setAlignment(Pos.CENTER);
 
-        Polygon leftPage = new Polygon(
-                -20.0, -4.0,
-                -3.0, -12.0,
-                -3.0, 10.0,
-                -20.0, 4.0);
-        leftPage.setFill(Color.WHITE);
-        leftPage.setStroke(Color.web("#d1dbe7"));
-
-        Polygon rightPage = new Polygon(
-                3.0, -12.0,
-                20.0, -4.0,
-                20.0, 4.0,
-                3.0, 10.0);
-        rightPage.setFill(Color.WHITE);
-        rightPage.setStroke(Color.web("#d1dbe7"));
-
-        Polygon cap = new Polygon(
-                0.0, -18.0,
-                24.0, -26.0,
-                24.0, -14.0,
-                0.0, -8.0);
-        cap.setFill(Color.web("#9a531f"));
-
-        Polygon feather = new Polygon(
-                24.0, -26.0,
-                44.0, -22.0,
-                34.0, -10.0,
-                24.0, -14.0);
-        feather.setFill(Color.web("#be8352"));
-
-        StackPane emblem = new StackPane(core, acronym, motto, leftPage, rightPage, cap, feather);
-        emblem.setMaxSize(116, 116);
-        emblem.setTranslateY(6);
-
-        logo.getChildren().addAll(outerRing, innerRing, topText, bottomText, emblem);
+        VBox logoContent = new VBox(8, topText, emblem, bottomText, motto);
+        logoContent.setAlignment(Pos.CENTER);
+        logo.getChildren().add(logoContent);
         return logo;
+    }
+
+    private ImageView createLogoImageView() {
+        for (String resourcePath : LOGO_RESOURCE_CANDIDATES) {
+            var resource = getClass().getResource(resourcePath);
+            if (resource == null) {
+                continue;
+            }
+
+            ImageView imageView = new ImageView(new Image(resource.toExternalForm(), true));
+            imageView.getStyleClass().add("login-logo-image");
+            imageView.setPreserveRatio(true);
+            imageView.setFitWidth(170);
+            imageView.setFitHeight(170);
+            imageView.setSmooth(true);
+            return imageView;
+        }
+
+        return null;
     }
 
     private VBox createFormPanel() {

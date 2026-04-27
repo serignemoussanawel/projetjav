@@ -398,35 +398,47 @@
 }
 
 .login-logo-shell {
-    -fx-background-color: rgba(255, 255, 255, 0.10);
-    -fx-background-radius: 30;
-    -fx-border-color: rgba(255, 255, 255, 0.16);
-    -fx-border-radius: 30;
-    -fx-padding: 18 22;
+    -fx-background-color: linear-gradient(to bottom, #f9fbfd 0%, #edf4f8 100%);
+    -fx-background-radius: 28;
+    -fx-border-color: #d6e2ea;
+    -fx-border-radius: 28;
+    -fx-border-width: 1;
+    -fx-padding: 18 20 20 20;
     -fx-alignment: center;
-    -fx-max-width: 240;
-    -fx-pref-width: 240;
+    -fx-max-width: 250;
+    -fx-pref-width: 250;
+    -fx-effect: dropshadow(gaussian, rgba(25, 53, 73, 0.08), 16, 0.10, 0, 4);
 }
 
 .login-logo {
-    -fx-effect: dropshadow(gaussian, rgba(12, 33, 50, 0.20), 16, 0.18, 0, 4);
+    -fx-effect: dropshadow(gaussian, rgba(12, 33, 50, 0.14), 18, 0.12, 0, 6);
 }
 
-.login-logo-ring-text {
-    -fx-text-fill: #8d4b1f;
-    -fx-font-size: 14px;
+.login-logo-image {
+    -fx-effect: dropshadow(gaussian, rgba(17, 44, 63, 0.10), 12, 0.10, 0, 2);
+}
+
+.login-logo-title {
+    -fx-text-fill: #9a5a29;
+    -fx-font-size: 12px;
     -fx-font-weight: 800;
 }
 
 .login-logo-acronym {
     -fx-text-fill: white;
-    -fx-font-size: 34px;
+    -fx-font-size: 18px;
+    -fx-font-weight: 900;
+}
+
+.login-logo-subtitle {
+    -fx-text-fill: #173b55;
+    -fx-font-size: 15px;
     -fx-font-weight: 800;
 }
 
 .login-logo-motto {
-    -fx-text-fill: white;
-    -fx-font-size: 8px;
+    -fx-text-fill: #748898;
+    -fx-font-size: 10px;
     -fx-font-style: italic;
     -fx-text-alignment: center;
 }
