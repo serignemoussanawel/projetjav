@@ -18,8 +18,8 @@ import java.util.List;
 
 public final class DatabaseManager {
     private static final String DEFAULT_URL = "jdbc:mysql://localhost:3306/gestion_chambres?createDatabaseIfNotExist=true&serverTimezone=UTC";
-    private static final String DEFAULT_USER = "root";
-    private static final String DEFAULT_PASSWORD = "0405Dieng@";
+    private static final String DEFAULT_USER = "admin";
+    private static final String DEFAULT_PASSWORD = "1234";
 
     private DatabaseManager() {
     }
